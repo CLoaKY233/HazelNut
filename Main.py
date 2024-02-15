@@ -1,6 +1,7 @@
 import asyncio
 import discord
 from discord.ext import commands
+import time
 
 intents = discord.Intents.all()
 
@@ -72,16 +73,18 @@ async def on_message(message):
 async def shutdown(ctx):
     required_role_id = 1207733658237009920  
     required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
+    
     if required_role in ctx.author.roles:
         confirmation_msg = await ctx.send("Are you sure you want to shut down the bot? React with ✅ to confirm or ❌ to cancel.")
         await confirmation_msg.add_reaction("✅")
         await confirmation_msg.add_reaction("❌")
 
         def check(reaction, user):
-            return user.guild_permissions.administrator and reaction.message == confirmation_msg and str(reaction.emoji) in ["✅", "❌"]
+            return user == ctx.author and str(reaction.emoji) in ["✅", "❌"] and reaction.message == confirmation_msg
 
         try:
             reaction, _ = await bot.wait_for("reaction_add", timeout=30, check=check)
+            await ctx.send("Thanks for confirming.")
         except asyncio.TimeoutError:
             await ctx.send("Confirmation timed out. Shutting down canceled.")
         else:
@@ -90,8 +93,13 @@ async def shutdown(ctx):
                 await bot.close()
             else:
                 await ctx.send("Shutdown canceled.")
+
     else:
         await ctx.send("You do not have permission to use this command.")
+
+    await asyncio.sleep(2)
+    await prune(ctx , "5")
+    
 
 
 
