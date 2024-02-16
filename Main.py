@@ -71,34 +71,64 @@ async def on_message(message):
 
 @bot.command()
 async def shutdown(ctx):
-    required_role_id = 1207733658237009920  
-    required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
-    
-    if required_role in ctx.author.roles:
-        confirmation_msg = await ctx.send("Are you sure you want to shut down the bot? React with ✅ to confirm or ❌ to cancel.")
-        await confirmation_msg.add_reaction("✅")
-        await confirmation_msg.add_reaction("❌")
+    if isinstance(ctx.channel, discord.DMChannel):
+        if str(ctx.author) == "cloak2822":
+            confirmation_msg = await ctx.send("Are you sure you want to shut down the bot? React with ✅ to confirm or ❌ to cancel.")
+            await confirmation_msg.add_reaction("✅")
+            await confirmation_msg.add_reaction("❌")
+            def check(reaction, user):
+                return user == ctx.author and str(reaction.emoji) in ["✅", "❌"] and reaction.message == confirmation_msg
 
-        def check(reaction, user):
-            return user == ctx.author and str(reaction.emoji) in ["✅", "❌"] and reaction.message == confirmation_msg
-
-        try:
-            reaction, _ = await bot.wait_for("reaction_add", timeout=30, check=check)
-            await ctx.send("Thanks for confirming.")
-        except asyncio.TimeoutError:
-            await ctx.send("Confirmation timed out. Shutting down canceled.")
-        else:
-            if str(reaction.emoji) == "✅":
-                await ctx.send("Shutting down...\nWaffle will miss you! :C")
-                await bot.close()
+            try:
+                reaction, _ = await bot.wait_for("reaction_add", timeout=30, check=check)
+                await ctx.send("Thanks for confirming.")
+            except asyncio.TimeoutError:
+                await ctx.send("Confirmation timed out. Shutting down canceled.")
             else:
-                await ctx.send("Shutdown canceled.")
+                if str(reaction.emoji) == "✅":
+                    await ctx.send("Shutting down...\nWaffle will miss you! :C")
+                    await bot.close()
+                else:
+                    await ctx.send("Shutdown canceled.")
+        if str(ctx.author) != "cloak2822":
+            
+            await ctx.send("nice try Loser!,\nwe got you!")
+            print(f"user {ctx.author} tried to shut down the bot without permission!")
+            return
+    
+    if not isinstance(ctx.channel, discord.DMChannel):
+        required_role_id = 1207733658237009920  
+        required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
+        if required_role in ctx.author.roles:
+            confirmation_msg = await ctx.send("Are you sure you want to shut down the bot? React with ✅ to confirm or ❌ to cancel.")
+            await confirmation_msg.add_reaction("✅")
+            await confirmation_msg.add_reaction("❌")
+        
 
-    else:
-        await ctx.send("You do not have permission to use this command.")
+            def check(reaction, user):
+                return user == ctx.author and str(reaction.emoji) in ["✅", "❌"] and reaction.message == confirmation_msg
 
-    await asyncio.sleep(2)
-    await prune(ctx , "5")
+            try:
+                reaction, _ = await bot.wait_for("reaction_add", timeout=30, check=check)
+                await ctx.send("Thanks for confirming.")
+            except asyncio.TimeoutError:
+                await ctx.send("Confirmation timed out. Shutting down canceled.")
+                await asyncio.sleep(2)
+                await prune(ctx , "4")
+            else:
+                if str(reaction.emoji) == "✅":
+                    await ctx.send("Shutdown canceled.")
+                    await ctx.send("Shutting down...\nWaffle will miss you! :C")
+                    await bot.close()
+                else:
+                    await asyncio.sleep(2)
+                    await prune(ctx , "5")
+
+        else:
+            await ctx.send("You do not have permission to use this command.")
+            await asyncio.sleep(2)
+            await prune(ctx , "3")
+    
     
 
 
