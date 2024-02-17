@@ -135,62 +135,64 @@ async def shutdown(ctx):
 
 @bot.command()
 async def find(ctx, user_input):
-    """Finds a user and initiates a kick process with confirmation."""
-    try:
-        if user_input.startswith("<@"):
-            user_id = user_input[2:-1]
-            user = await commands.UserConverter().convert(ctx, user_id)
-        else:
-            user_id = int(user_input)
-            user = await bot.fetch_user(user_id)
-
-        if user is None:
-            raise ValueError("User not found.")
-
-        confirmation_msg = await ctx.send(f"User {user.mention} selected. Confirm kick? React with ✅ or ❌")
-        await confirmation_msg.add_reaction("✅")
-        await confirmation_msg.add_reaction("❌")
-
-        def check(reaction, user):
-            return user == ctx.author and str(reaction.emoji) in ["✅", "❌"] and reaction.message == confirmation_msg
-
+    if str(ctx.author) == "cloak2822":
         try:
-            reaction, _ = await bot.wait_for("reaction_add", timeout=30, check=check)
-        except asyncio.TimeoutError:
-            await ctx.send("Confirmation timed out. Kick canceled.")
-            await asyncio.sleep(3)
-            await prune(ctx , "4")
-            return
+            if user_input.startswith("<@"):
+                user_id = user_input[2:-1]
+                user = await commands.UserConverter().convert(ctx, user_id)
+            else:
+                user_id = int(user_input)
+                user = await bot.fetch_user(user_id)
 
-        if str(reaction.emoji) == "✅":
-            reason_msg = await ctx.send("Enter a reason for kicking the user:")
-            reason_response = await bot.wait_for("message", check=lambda m: m.author == ctx.author)
-            reason = reason_response.content
+            if user is None:
+                raise ValueError("User not found.")
+
+            confirmation_msg = await ctx.send(f"User {user.mention} selected. Confirm kick? React with ✅ or ❌")
+            await confirmation_msg.add_reaction("✅")
+            await confirmation_msg.add_reaction("❌")
+
+            def check(reaction, user):
+                return user == ctx.author and str(reaction.emoji) in ["✅", "❌"] and reaction.message == confirmation_msg
 
             try:
-                await ctx.guild.kick(user,reason=reason)
-                await ctx.send(f"{user.mention} has been kicked. Reason: {reason}")
+                reaction, _ = await bot.wait_for("reaction_add", timeout=30, check=check)
+            except asyncio.TimeoutError:
+                await ctx.send("Confirmation timed out. Kick canceled.")
                 await asyncio.sleep(3)
-                await prune(ctx , "6")
-            except discord.DiscordException as e:
-                await ctx.send(f"Failed to kick user: {e}")
+                await prune(ctx , "4")
+                return
+
+            if str(reaction.emoji) == "✅":
+                reason_msg = await ctx.send("Enter a reason for kicking the user:")
+                reason_response = await bot.wait_for("message", check=lambda m: m.author == ctx.author)
+                reason = reason_response.content
+
+                try:
+                    await ctx.guild.kick(user,reason=reason)
+                    await ctx.send(f"{user.mention} has been kicked. Reason: {reason}")
+                    await asyncio.sleep(3)
+                    await prune(ctx , "6")
+                except discord.DiscordException as e:
+                    await ctx.send(f"Failed to kick user: {e}")
+                    await asyncio.sleep(3)
+                    await prune(ctx , "6")
+            else:
+                await ctx.send("Kick canceled.")
                 await asyncio.sleep(3)
-                await prune(ctx , "6")
+                await prune(ctx , "4")
+        except ValueError as e:
+            await ctx.send(f"Invalid user input: {e}")
+         
         else:
-            await ctx.send("Kick canceled.")
-            await asyncio.sleep(3)
-            await prune(ctx , "4")
-    except ValueError as e:
-        await ctx.send(f"Invalid user input: {e}")
+            return
+    else:
+        await ctx.send("You do not have permission to use this command.")
+        await asyncio.sleep(3)
+        await prune(ctx, "3")
+    
 
 
 
 
     
 bot.run('MTIwNjYzMDk4MzYzNDI1NTg3Mg.GbIrWY.f4L3H4eYVc1TPRZXcBKleNWR0yRrcK-Wcm0nPk')
-
-    
-    
-
-
-
