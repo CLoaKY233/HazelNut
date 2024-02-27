@@ -2,7 +2,7 @@ import asyncio
 import discord
 from discord.ext import commands
 import time
-
+import datetime
 
 intents = discord.Intents.all()
 
@@ -12,16 +12,51 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def on_ready():
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     channel = bot.get_channel(1207734746981998614) 
-    await channel.send(f"Hello from Waffle!\nlogged in as {bot.user}")
+    hello = discord.Embed(title=f"Hello from {bot.user.display_name}", color=0x00FFFF)
+    hello.set_thumbnail(url=bot.user.avatar.url)
+    hello.add_field(name="What can Waffle do!", value=f"{bot.user.display_name} will handle this exhibition with precision and care!", inline=False)
+    await channel.send(embed=hello)
+
 
 @bot.command()
 async def hello(ctx):
-    await ctx.send("A Warm and chocolatey Hello from Waffle!")
-    
+    greetings = discord.Embed(title=f"Hello from {bot.user.display_name}",color = 0x00F069)
+    greetings.set_thumbnail(url = ctx.author.avatar.url)
+    greetings.add_field(name = f"{bot.user.display_name} is online" ,value=f"{bot.user.display_name} say's Hello! to {ctx.author.mention}", inline=False)
+    await ctx.send(embed=greetings)
+
+
+@bot.command()
+async def profile(ctx):
+    """Sends an embed with the bot's profile picture and information."""
+
+    embed = discord.Embed(title=f"{bot.user.display_name}'s Profile", color=0x00FFFF)  # Adjust color as needed
+    embed.set_thumbnail(url=bot.user.avatar.url)  # Use avatar.url for avatar image
+    embed.add_field(name="Username", value=bot.user.name, inline=False)
+    embed.add_field(name="User ID", value=bot.user.id, inline=False)
+
+    await ctx.send(embed=embed)  
+
+
 @bot.command()
 async def dm(ctx):
-    await ctx.author.send("hello")
-
+    dmembed=discord.Embed(title = f"Hello! {ctx.author.name}")
+    dmembed.set_thumbnail(url = ctx.author.avatar.url)
+    dmembed.add_field(name = "",value= f"please enter the one time verification code to verify yourself!", inline=False)
+    await ctx.author.send(embed = dmembed)
+@bot.event
+async def on_message(message):
+    if isinstance(message.channel, discord.DMChannel) and message.author != bot.user:
+        print(f"Received DM from {message.author}: {message.content}")
+        if message.content.isdigit() == True:
+            if message.content == "123":
+                await message.author.send("you are verified")
+            else:
+                await message.author.send("invalid code, try again")
+    await bot.process_commands(message)
+    
+    
+    
 @bot.command()
 async def prune(ctx, num_messages=""):
     if isinstance(ctx.channel, discord.DMChannel):
@@ -59,22 +94,24 @@ async def prune(ctx, num_messages=""):
         except asyncio.TimeoutError:
             await ctx.send("You took too long to respond.")
     
-@bot.event
-async def on_message(message):
-    if isinstance(message.channel, discord.DMChannel) and message.author != bot.user:
-        print(f"Received DM from {message.author}: {message.content}")
-        if message.content.isdigit() == True:
-            if message.content == "123":
-                await message.author.send("you are verified")
-            else:
-                await message.author.send("invalid code, try again")
-    await bot.process_commands(message)
+
 
 @bot.command()
-async def shutdown(ctx):
+async def kill(ctx):
+    killembed = discord.Embed(
+                title="Attention!",
+                description="Are you sure you want to shut down the bot?",
+                color=0x00ffff,  # Adjust color as needed
+                timestamp=datetime.datetime.now()
+                )
+    killembed.add_field(
+                name="Confirmation",
+                value="React with ✅ to confirm shutdown, or ❌ to cancel.",
+                inline=False
+                )
     if isinstance(ctx.channel, discord.DMChannel):
         if str(ctx.author) == "cloak2822":
-            confirmation_msg = await ctx.send("Are you sure you want to shut down the bot? React with ✅ to confirm or ❌ to cancel.")
+            confirmation_msg = await ctx.send(embed=killembed)
             await confirmation_msg.add_reaction("✅")
             await confirmation_msg.add_reaction("❌")
             def check(reaction, user):
@@ -100,11 +137,12 @@ async def shutdown(ctx):
     if not isinstance(ctx.channel, discord.DMChannel):
         required_role_id = 1207733658237009920  
         required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
-        if required_role in ctx.author.roles:
-            confirmation_msg = await ctx.send("Are you sure you want to shut down the bot? React with ✅ to confirm or ❌ to cancel.")
+        if required_role in ctx.author.roles:  
+            
+            confirmation_msg = await ctx.send(embed=killembed)
             await confirmation_msg.add_reaction("✅")
             await confirmation_msg.add_reaction("❌")
-        
+
 
             def check(reaction, user):
                 return user == ctx.author and str(reaction.emoji) in ["✅", "❌"] and reaction.message == confirmation_msg
@@ -118,12 +156,11 @@ async def shutdown(ctx):
                 await prune(ctx , "4")
             else:
                 if str(reaction.emoji) == "✅":
-                    await ctx.send("Shutdown canceled.")
                     await ctx.send("Shutting down...\nWaffle will miss you! :C")
                     await bot.close()
                 else:
                     await asyncio.sleep(3)
-                    await prune(ctx , "5")
+                    await prune(ctx , "4")
 
         else:
             await ctx.send("You do not have permission to use this command.")
@@ -131,10 +168,8 @@ async def shutdown(ctx):
             await prune(ctx , "3")
 
 
-
-
 @bot.command()
-async def find(ctx, user_input):
+async def kick(ctx, user_input):
     if str(ctx.author) == "cloak2822":
         try:
             if user_input.startswith("<@"):
@@ -190,6 +225,12 @@ async def find(ctx, user_input):
         await asyncio.sleep(3)
         await prune(ctx, "3")
     
+   
+    
+  
+    
+
+
 
 
 
