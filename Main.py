@@ -38,25 +38,10 @@ async def profile(ctx):
     await ctx.send(embed=embed)  
 
 
-@bot.command()
-async def dm(ctx):
-    dmembed=discord.Embed(title = f"Hello! {ctx.author.name}")
-    dmembed.set_thumbnail(url = ctx.author.avatar.url)
-    dmembed.add_field(name = "",value= f"please enter the one time verification code to verify yourself!", inline=False)
-    await ctx.author.send(embed = dmembed)
-@bot.event
-async def on_message(message):
-    if isinstance(message.channel, discord.DMChannel) and message.author != bot.user:
-        print(f"Received DM from {message.author}: {message.content}")
-        if message.content.isdigit() == True:
-            if message.content == "123":
-                await message.author.send("you are verified")
-            else:
-                await message.author.send("invalid code, try again")
-    await bot.process_commands(message)
+
     
     
-    
+   
 @bot.command()
 async def prune(ctx, num_messages=""):
     if isinstance(ctx.channel, discord.DMChannel):
@@ -237,13 +222,25 @@ async def kick(ctx, user_input):
         await asyncio.sleep(3)
         await prune(ctx, "3")
     
+
    
-    
-  
-    
-
-
-
+@bot.command()
+async def dm(ctx):
+    dmembed=discord.Embed(title = f"Hello! {ctx.author.name}")
+    dmembed.set_thumbnail(url = ctx.author.avatar.url)
+    dmembed.add_field(name = "",value= f"please enter the one time verification code to verify yourself!", inline=False)
+    await ctx.author.send(embed = dmembed)
+@bot.event
+async def on_message(message):
+    if isinstance(message.channel, discord.DMChannel) and message.author != bot.user:
+        print(f"Received DM from {message.author}: {message.content}")
+        if message.content.isdigit() == True:
+            if message.content == "123":
+                await message.author.send("you are verified")           
+            else:
+                await message.author.send("invalid code, try again")
+    await bot.process_commands(message)
+   
 
 
 
