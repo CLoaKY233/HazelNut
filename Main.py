@@ -182,7 +182,19 @@ async def kick(ctx, user_input):
             if user is None:
                 raise ValueError("User not found.")
 
-            confirmation_msg = await ctx.send(f"User {user.mention} selected. Confirm kick? React with ✅ or ❌")
+            kickembed = discord.Embed(
+                title="Attention!",
+                description=f"Do you want to kick {user.mention}?",
+                color=0x00ffff,  # Adjust color as needed
+                timestamp=datetime.datetime.now()
+                )
+            kickembed.add_field(
+                name="Confirmation",
+                value="React with ✅ to confirm shutdown, or ❌ to cancel.",
+                inline=False
+                )
+            
+            confirmation_msg = await ctx.send(embed = kickembed)
             await confirmation_msg.add_reaction("✅")
             await confirmation_msg.add_reaction("❌")
 
