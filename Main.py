@@ -5,7 +5,6 @@ import time
 import datetime
 
 intents = discord.Intents.all()
-
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 @bot.event
@@ -21,7 +20,11 @@ async def on_ready():
 @bot.command()
 async def hello(ctx):
     greetings = discord.Embed(title=f"Hello from {bot.user.display_name}",color = 0x00F069)
-    greetings.set_thumbnail(url = ctx.author.avatar.url)
+    try:
+        greetings.set_thumbnail(url=ctx.author.avatar.url)
+    except AttributeError:  # Catch AttributeError if the user has no avatar
+    # Set a default thumbnail URL
+        greetings.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
     greetings.add_field(name = f"{bot.user.display_name} is online" ,value=f"{bot.user.display_name} say's Hello! to {ctx.author.mention}", inline=False)
     await ctx.send(embed=greetings)
 
@@ -29,18 +32,12 @@ async def hello(ctx):
 @bot.command()
 async def profile(ctx):
     """Sends an embed with the bot's profile picture and information."""
-
     embed = discord.Embed(title=f"{bot.user.display_name}'s Profile", color=0x00FFFF)  # Adjust color as needed
     embed.set_thumbnail(url=bot.user.avatar.url)  # Use avatar.url for avatar image
     embed.add_field(name="Username", value=bot.user.name, inline=False)
     embed.add_field(name="User ID", value=bot.user.id, inline=False)
-
     await ctx.send(embed=embed)  
 
-
-
-    
-    
    
 @bot.command()
 async def prune(ctx, num_messages=""):
@@ -79,7 +76,6 @@ async def prune(ctx, num_messages=""):
         except asyncio.TimeoutError:
             await ctx.send("You took too long to respond.")
     
-
 
 @bot.command()
 async def kill(ctx):
@@ -222,12 +218,34 @@ async def kick(ctx, user_input):
         await asyncio.sleep(3)
         await prune(ctx, "3")
     
+        
+@bot.event
+async def add_role_to_user(user_id):
+    guild = bot.get_guild(1203342217519964170)  # Replace YOUR_GUILD_ID with your guild's ID
+    user = guild.get_member(user_id)
+    if user is None:
+        print(f"User with ID {user_id} not found in the guild.")
+        return
+    
+    role = guild.get_role(1212090229444583464)  # Replace YOUR_ROLE_ID with the role's ID you want to add
+    if role is None:
+        print(f"Role with ID {1212090229444583464} not found in the guild.")
+        return
+    
+    await user.add_roles(role)
+    print(f"Role {role.name} added to user {user.name}.")
 
-   
+
 @bot.command()
 async def dm(ctx):
     dmembed=discord.Embed(title = f"Hello! {ctx.author.name}")
-    dmembed.set_thumbnail(url = ctx.author.avatar.url)
+    try:
+        dmembed.set_thumbnail(url=ctx.author.avatar.url)
+    except AttributeError:  # Catch AttributeError if the user has no avatar
+    # Set a default thumbnail URL
+        dmembed.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
+
+        
     dmembed.add_field(name = "",value= f"please enter the one time verification code to verify yourself!", inline=False)
     await ctx.author.send(embed = dmembed)
 @bot.event
@@ -236,12 +254,14 @@ async def on_message(message):
         print(f"Received DM from {message.author}: {message.content}")
         if message.content.isdigit() == True:
             if message.content == "123":
-                await message.author.send("you are verified")           
+                await message.author.send("you are verified")    
+                await add_role_to_user(message.author.id)       
             else:
                 await message.author.send("invalid code, try again")
     await bot.process_commands(message)
    
-
+#1212090229444583464 role id verified
+#1207734746981998614 channel id
 
 
     
