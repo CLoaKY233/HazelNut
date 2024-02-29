@@ -174,6 +174,11 @@ async def kick(ctx, user_input):
                 value="React with ✅ to confirm shutdown, or ❌ to cancel.",
                 inline=False
                 )
+            try:
+                kickembed.set_thumbnail(url=user.avatar.url)
+            except AttributeError:  # Catch AttributeError if the user has no avatar
+            # Set a default thumbnail URL
+                kickembed.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
             
             confirmation_msg = await ctx.send(embed = kickembed)
             await confirmation_msg.add_reaction("✅")
@@ -236,6 +241,8 @@ async def add_role_to_user(user_id):
     print(f"Role {role.name} added to user {user.name}.")
 
 
+
+
 @bot.command()
 async def dm(ctx):
     dmembed=discord.Embed(title = f"Hello! {ctx.author.name}")
@@ -262,7 +269,63 @@ async def on_message(message):
    
 #1212090229444583464 role id verified
 #1207734746981998614 channel id
+    
 
+#ticketchannel
+#  id 1212442019302215700
+   
+async def check_message_exists(channel):
+    async for message in channel.history(limit=None):
+        if message.author == bot.user and message.embeds:
+            return True
+    return False
+
+#checks if the message exists else sends one! with reactions
+@bot.command()
+async def ticket(ctx):
+    role = discord.utils.get(ctx.guild.roles, name="Admin")
+    if role in ctx.author.roles:
+        channel1 = bot.get_channel(1212442019302215700)
+        ticketembed=discord.Embed(
+            title = "Create Ticket!",
+            description=f"do you want to create a ticket?",
+            color = 0x00f069,
+            timestamp= datetime.datetime.now()
+            )
+        ticketembed.add_field(
+            name = "Confirmation",
+            value=f"click the reaction to create a ticket",
+            inline = False
+        )
+        button = discord.ui.Button(label="Create Ticket", style=discord.ButtonStyle.primary)
+        async def button_callback(interaction):
+            overwrites = {
+                ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),  # Hide the channel from @everyone
+                ctx.author: discord.PermissionOverwrite(read_messages=True)  # Allow the command author to read messages
+                }
+            channel_name= f"{ctx.author.name}'s"
+            await ctx.guild.create_text_channel(channel_name, overwrites=overwrites)
+
+        button.callback = button_callback
+        view = discord.ui.View()  
+        view.add_item(button) 
+        await channel1.send(embed=ticketembed, view=view)
+
+        ticketembed.set_thumbnail(url = "https://www.citypng.com/public/uploads/preview/-11597269407aqavkzrcos.png")
+        if not await check_message_exists(channel1):
+            await channel1.send(embed = ticketembed)
+    else:
+        await ctx.send("You are not authorized for this task!")
+        
+
+
+# @bot.event
+# async def check_reaction():
+
+
+
+
+            
 
     
 bot.run('MTIwNjYzMDk4MzYzNDI1NTg3Mg.GbIrWY.f4L3H4eYVc1TPRZXcBKleNWR0yRrcK-Wcm0nPk')
