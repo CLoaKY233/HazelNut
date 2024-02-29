@@ -22,6 +22,8 @@ async def on_ready():
         hello.add_field(name="What can Waffle do!", value=f"{bot.user.display_name} will handle this exhibition with precision and care!", inline=False)
         await channel.send(embed=hello)
     await Readyhello()
+    
+    
     async def find_channel( channel_name):
         guild = bot.get_guild(1203342217519964170)
         for channel in guild.channels:
@@ -32,6 +34,7 @@ async def on_ready():
         guild = bot.get_guild(1203342217519964170)
         channel1 = bot.get_channel(1212442019302215700)
         await channel1.purge()
+        
         
         ticketembed=discord.Embed(
             title = "Create Ticket!",
@@ -67,7 +70,7 @@ async def on_ready():
             await new_channel.send(interaction.user.mention)
             
             message2 = await interaction.followup.send(f"your ticket has been created {interaction.user.mention} -> {new_channel.mention}", ephemeral=True)
-            
+            await new_channel.edit(slowmode_delay=10)
             await asyncio.sleep(10)
             await message2.delete()
                 
@@ -114,6 +117,58 @@ async def on_ready():
         
         await channel1.send(embed = dmembed, view = view)
     await get_dm()
+
+    async def create_team():
+        guild = bot.get_guild(1203342217519964170)
+        channel1 = bot.get_channel(1212798572886757436)
+        
+        await channel1.purge()
+        
+        teamembed=discord.Embed(
+            title = "Create Team!",
+            description=f"Click To Create a Team or Join one!!!",
+            color = 0xFFFFFF,
+            timestamp= datetime.datetime.now()
+            )
+        teamembed.add_field(
+            name = "Teams",
+            value=f"click the reaction to create or join a team with a Unique Team Code!",
+            inline = False
+            )
+        
+        button1 = discord.ui.Button(label="Create Team", style=discord.ButtonStyle.success)
+        async def button_callback(interaction):
+            await interaction.response.defer()
+            #logic to create team
+            print("create")
+            message3 = await interaction.followup.send(f"your team has been created", ephemeral=True)
+            await asyncio.sleep(10)
+            await message3.delete()
+        button1.callback = button_callback 
+
+        button2 =  discord.ui.Button(label="Join Team", style=discord.ButtonStyle.blurple)
+        async def button2_callback(interaction):
+            await interaction.response.defer()
+            print ("join")
+            message4 = await interaction.followup.send(f"you have joined a team", ephemeral=True)
+            await asyncio.sleep(30)
+            await message4.delete()
+            #logic to join team
+        button2.callback = button2_callback
+        
+           
+        
+        
+        view = discord.ui.View()  
+        view.add_item(button1)
+        view.add_item(button2)
+        teamembed.set_thumbnail(url = "https://www.citypng.com/public/uploads/preview/-11597269407aqavkzrcos.png")
+        
+
+        await channel1.send(embed = teamembed, view = view)        
+    await create_team()
+
+
 
 
 @bot.command()
@@ -337,20 +392,6 @@ async def add_role_to_user(user_id):
     
     await user.add_roles(role)
     print(f"Role {role.name} added to user {user.name}.")
-
-
-# @bot.command()
-# async def dm(ctx):
-#     dmembed=discord.Embed(title = f"Hello! {ctx.author.name}")
-#     try:
-#         dmembed.set_thumbnail(url=ctx.author.avatar.url)
-#     except AttributeError:  # Catch AttributeError if the user has no avatar
-#     # Set a default thumbnail URL
-#         dmembed.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
-
-        
-#     dmembed.add_field(name = "",value= f"please enter the one time verification code to verify yourself!", inline=False)
-#     await ctx.author.send(embed = dmembed)
 
 
 @bot.event
