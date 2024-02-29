@@ -9,13 +9,57 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    channel = bot.get_channel(1207734746981998614) 
-    hello = discord.Embed(title=f"Hello from {bot.user.display_name}", color=0x00FFFF)
-    hello.set_thumbnail(url=bot.user.avatar.url)
-    hello.add_field(name="What can Waffle do!", value=f"{bot.user.display_name} will handle this exhibition with precision and care!", inline=False)
-    await channel.send(embed=hello)
+    
+    #ready hello message
+    async def Readyhello():
+        print(f'Logged in as {bot.user} (ID: {bot.user.id})')
+        channel = bot.get_channel(1207734746981998614) 
+        hello = discord.Embed(title=f"Hello from {bot.user.display_name}", color=0x00FFFF)
+        hello.set_thumbnail(url=bot.user.avatar.url)
+        hello.add_field(name="What can Waffle do!", value=f"{bot.user.display_name} will handle this exhibition with precision and care!", inline=False)
+        await channel.send(embed=hello)
+    await Readyhello()
+    
+    async def Ticket():
+        guild = bot.get_guild(1203342217519964170)
+        channel1 = bot.get_channel(1212442019302215700)
+        await channel1.purge()
+        ticketembed=discord.Embed(
+            title = "Create Ticket!",
+            description=f"do you want to create a ticket?",
+            color = 0x00f069,
+            timestamp= datetime.datetime.now()
+            )
+        ticketembed.add_field(
+            name = "Confirmation",
+            value=f"click the reaction to create a ticket",
+            inline = False
+            )
+        
+        button = discord.ui.Button(label="Create Ticket", style=discord.ButtonStyle.primary)
+        async def button_callback(interaction):
+            await interaction.response.defer()
+            
+            overwrites = {
+                guild.default_role : discord.PermissionOverwrite(read_messages=False),  # Hide the channel from @everyone
+                interaction.user : discord.PermissionOverwrite(read_messages=True)  # Allow the command author to read messages
+                }
+            channel_name= f"{interaction.user.name}'s ticket"
+            new_channel = await guild.create_text_channel(channel_name, overwrites=overwrites)
+            await new_channel.send(interaction.user.mention)
+            message2 = await interaction.followup.send(f"your ticket has been created {interaction.user.mention}", ephemeral=True)
+            
+            await asyncio.sleep(5)
+            await message2.delete()
+            
+        button.callback = button_callback
+        view = discord.ui.View()  
+        view.add_item(button)
+        ticketembed.set_thumbnail(url = "https://www.citypng.com/public/uploads/preview/-11597269407aqavkzrcos.png") 
+        
 
+        await channel1.send(embed = ticketembed, view = view)
+    await Ticket()
 
 @bot.command()
 async def hello(ctx):
@@ -241,8 +285,6 @@ async def add_role_to_user(user_id):
     print(f"Role {role.name} added to user {user.name}.")
 
 
-
-
 @bot.command()
 async def dm(ctx):
     dmembed=discord.Embed(title = f"Hello! {ctx.author.name}")
@@ -267,60 +309,20 @@ async def on_message(message):
                 await message.author.send("invalid code, try again")
     await bot.process_commands(message)
    
-#1212090229444583464 role id verified
-#1207734746981998614 channel id
-    
 
-#ticketchannel
-#  id 1212442019302215700
    
-async def check_message_exists(channel):
-    async for message in channel.history(limit=None):
-        if message.author == bot.user and message.embeds:
-            return True
-    return False
 
-#checks if the message exists else sends one! with reactions
-@bot.command()
-async def ticket(ctx):
-    role = discord.utils.get(ctx.guild.roles, name="Admin")
-    if role in ctx.author.roles:
-        channel1 = bot.get_channel(1212442019302215700)
-        ticketembed=discord.Embed(
-            title = "Create Ticket!",
-            description=f"do you want to create a ticket?",
-            color = 0x00f069,
-            timestamp= datetime.datetime.now()
-            )
-        ticketembed.add_field(
-            name = "Confirmation",
-            value=f"click the reaction to create a ticket",
-            inline = False
-        )
-        button = discord.ui.Button(label="Create Ticket", style=discord.ButtonStyle.primary)
-        async def button_callback(interaction):
-            overwrites = {
-                ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),  # Hide the channel from @everyone
-                ctx.author: discord.PermissionOverwrite(read_messages=True)  # Allow the command author to read messages
-                }
-            channel_name= f"{ctx.author.name}'s"
-            await ctx.guild.create_text_channel(channel_name, overwrites=overwrites)
 
-        button.callback = button_callback
-        view = discord.ui.View()  
-        view.add_item(button) 
-        await channel1.send(embed=ticketembed, view=view)
 
-        ticketembed.set_thumbnail(url = "https://www.citypng.com/public/uploads/preview/-11597269407aqavkzrcos.png")
-        if not await check_message_exists(channel1):
-            await channel1.send(embed = ticketembed)
-    else:
-        await ctx.send("You are not authorized for this task!")
+
+
+
+    
+ 
+       
         
 
 
-# @bot.event
-# async def check_reaction():
 
 
 
