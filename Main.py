@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands
 import time
 import datetime
-
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
 
@@ -14,16 +13,26 @@ async def on_ready():
     async def Readyhello():
         print(f'Logged in as {bot.user} (ID: {bot.user.id})')
         channel = bot.get_channel(1207734746981998614) 
-        hello = discord.Embed(title=f"Hello from {bot.user.display_name}", color=0x00FFFF)
+        hello = discord.Embed(
+            title=f"Hello from {bot.user.display_name}",
+            color=0x00FFFF,
+            timestamp= datetime.datetime.now()
+            )
         hello.set_thumbnail(url=bot.user.avatar.url)
         hello.add_field(name="What can Waffle do!", value=f"{bot.user.display_name} will handle this exhibition with precision and care!", inline=False)
         await channel.send(embed=hello)
     await Readyhello()
-    
+    async def find_channel( channel_name):
+        guild = bot.get_guild(1203342217519964170)
+        for channel in guild.channels:
+            if channel.name == channel_name:
+                return channel.id
+        return None
     async def Ticket():
         guild = bot.get_guild(1203342217519964170)
         channel1 = bot.get_channel(1212442019302215700)
         await channel1.purge()
+        
         ticketembed=discord.Embed(
             title = "Create Ticket!",
             description=f"do you want to create a ticket?",
@@ -45,19 +54,21 @@ async def on_ready():
                 interaction.user : discord.PermissionOverwrite(read_messages=True)  # Allow the command author to read messages
                 }
             channel_name= f"{interaction.user.name}s-ticket"
-            
+
+          
             channel_names_list = [channel.name for channel in guild.channels]
             if channel_name in channel_names_list:
-                message3 = await interaction.followup.send(f"{interaction.user.mention} you already have a ticket!", ephemeral=True)
-                await asyncio.sleep(5)
+                existing_channel = await find_channel(channel_name)
+                message3 = await interaction.followup.send(f"{interaction.user.mention} you already have a ticket! -> <#{existing_channel}> ", ephemeral=True)
+                await asyncio.sleep(10)
                 await message3.delete()
                 return                 
             new_channel = await guild.create_text_channel(channel_name, overwrites=overwrites)
             await new_channel.send(interaction.user.mention)
             
-            message2 = await interaction.followup.send(f"your ticket has been created {interaction.user.mention}", ephemeral=True)
-            print (channel_names_list)
-            await asyncio.sleep(5)
+            message2 = await interaction.followup.send(f"your ticket has been created {interaction.user.mention} -> {new_channel.mention}", ephemeral=True)
+            
+            await asyncio.sleep(10)
             await message2.delete()
                 
                 
@@ -70,6 +81,40 @@ async def on_ready():
 
         await channel1.send(embed = ticketembed, view = view)
     await Ticket()
+
+    async def get_dm():
+        guild = bot.get_guild(1203342217519964170)
+        channel1 = bot.get_channel(1212094690514698331)
+        
+        await channel1.purge()
+        
+        dmembed=discord.Embed(
+            title = "Direct Messages",
+            description=f"Click the Button to recieve a Message from Waffle!",
+            color = 0x00f069,
+            timestamp= datetime.datetime.now()
+            )
+        dmembed.set_thumbnail(url = "https://www.citypng.com/public/uploads/preview/-11597269407aqavkzrcos.png")
+        button = discord.ui.Button(label="Recieve D.M.", style=discord.ButtonStyle.secondary)
+        
+        async def button_callback(interaction):
+            
+            await interaction.response.defer()
+            msgembed=discord.Embed(title = f"Hello! {interaction.channel.mention}")
+            try:
+                msgembed.set_thumbnail(url=interaction.user.avatar.url)
+            except AttributeError: 
+                msgembed.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")  
+            msgembed.add_field(name = "Verification",value= "please enter the one time verification code to verify yourself!", inline=True)
+            await interaction.user.send(embed = msgembed) 
+            
+        button.callback = button_callback
+        view = discord.ui.View()  
+        view.add_item(button)
+        
+        await channel1.send(embed = dmembed, view = view)
+    await get_dm()
+
 
 @bot.command()
 async def hello(ctx):
@@ -278,7 +323,6 @@ async def kick(ctx, user_input):
         await prune(ctx, "3")
     
         
-@bot.event
 async def add_role_to_user(user_id):
     guild = bot.get_guild(1203342217519964170)  # Replace YOUR_GUILD_ID with your guild's ID
     user = guild.get_member(user_id)
@@ -295,18 +339,20 @@ async def add_role_to_user(user_id):
     print(f"Role {role.name} added to user {user.name}.")
 
 
-@bot.command()
-async def dm(ctx):
-    dmembed=discord.Embed(title = f"Hello! {ctx.author.name}")
-    try:
-        dmembed.set_thumbnail(url=ctx.author.avatar.url)
-    except AttributeError:  # Catch AttributeError if the user has no avatar
-    # Set a default thumbnail URL
-        dmembed.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
+# @bot.command()
+# async def dm(ctx):
+#     dmembed=discord.Embed(title = f"Hello! {ctx.author.name}")
+#     try:
+#         dmembed.set_thumbnail(url=ctx.author.avatar.url)
+#     except AttributeError:  # Catch AttributeError if the user has no avatar
+#     # Set a default thumbnail URL
+#         dmembed.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
 
         
-    dmembed.add_field(name = "",value= f"please enter the one time verification code to verify yourself!", inline=False)
-    await ctx.author.send(embed = dmembed)
+#     dmembed.add_field(name = "",value= f"please enter the one time verification code to verify yourself!", inline=False)
+#     await ctx.author.send(embed = dmembed)
+
+
 @bot.event
 async def on_message(message):
     if isinstance(message.channel, discord.DMChannel) and message.author != bot.user:
