@@ -44,13 +44,23 @@ async def on_ready():
                 guild.default_role : discord.PermissionOverwrite(read_messages=False),  # Hide the channel from @everyone
                 interaction.user : discord.PermissionOverwrite(read_messages=True)  # Allow the command author to read messages
                 }
-            channel_name= f"{interaction.user.name}'s ticket"
+            channel_name= f"{interaction.user.name}s-ticket"
+            
+            channel_names_list = [channel.name for channel in guild.channels]
+            if channel_name in channel_names_list:
+                message3 = await interaction.followup.send(f"{interaction.user.mention} you already have a ticket!", ephemeral=True)
+                await asyncio.sleep(5)
+                await message3.delete()
+                return                 
             new_channel = await guild.create_text_channel(channel_name, overwrites=overwrites)
             await new_channel.send(interaction.user.mention)
-            message2 = await interaction.followup.send(f"your ticket has been created {interaction.user.mention}", ephemeral=True)
             
+            message2 = await interaction.followup.send(f"your ticket has been created {interaction.user.mention}", ephemeral=True)
+            print (channel_names_list)
             await asyncio.sleep(5)
             await message2.delete()
+                
+                
             
         button.callback = button_callback
         view = discord.ui.View()  
