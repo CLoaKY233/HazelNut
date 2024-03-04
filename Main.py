@@ -3,9 +3,31 @@ import discord
 from discord.ext import commands
 import time
 import datetime
+import csv
+import os
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
+
+
+async def add_role_to_user(user_id,role_id):
+  guild = bot.get_guild(
+      1203342217519964170)  # Replace YOUR_GUILD_ID with your guild's ID
+  user = guild.get_member(user_id)
+  if user is None:
+    print(f"User with ID {user_id} not found in the guild.")
+    return
+
+  role = guild.get_role(
+      role_id
+  )  # Replace YOUR_ROLE_ID with the role's ID you want to add
+  if role is None:
+    print(f"Role with ID {role_id} not found in the guild.")
+    return
+
+  await user.add_roles(role)
+  print(f"Role {role.name} added to user {user.name}.")
+
 
 
 @bot.event
@@ -159,12 +181,48 @@ async def on_ready():
 
     async def button_callback(interaction):
       await interaction.response.defer()
+
       #logic to create team
       print("create")
-      message3 = await interaction.followup.send(f"your team has been created",
-                                                 ephemeral=True)
+      #1214133687181123624 role id
+      #1214133586232475708 caregory id
+
+#change overwrites later for team members channel visibility
+      overwrites = {
+          guild.default_role: discord.PermissionOverwrite(
+              read_messages=False),  # Hide the channel from @everyone
+          interaction.user: discord.PermissionOverwrite(
+              read_messages=True)  # Allow the command author to read messages
+      }
+      channel_name = f"{interaction.user.name}s-team"
+
+      role = discord.utils.get(guild.roles, id=1214133687181123624)
+      channel_names_list = [channel.name for channel in guild.channels]
+      if channel_name in channel_names_list:
+        existing_channel = await find_channel(channel_name)
+      if role in interaction.user.roles:
+        
+        message3 = await interaction.followup.send(
+            f"{interaction.user.mention} you already Created a Team! -> <#{existing_channel}> ",
+            ephemeral=True)
+        await asyncio.sleep(10)
+        await message3.delete()
+        return
+      category1 = discord.utils.get(guild.categories, id=1214133586232475708)
+      
+      new_channel = await guild.create_text_channel(channel_name,
+                                                    category=category1,
+                                                    overwrites=overwrites)
+      await add_role_to_user(interaction.user.id,1214133687181123624)
+      await new_channel.send(interaction.user.mention)
+
+      message2 = await interaction.followup.send(
+          f"{interaction.user.mention} You successfully created a Team  -> {new_channel.mention}",
+          ephemeral=True)
+      await new_channel.edit(slowmode_delay=100)
       await asyncio.sleep(10)
-      await message3.delete()
+      await message2.delete()
+
 
     button1.callback = button_callback
 
@@ -420,23 +478,7 @@ async def kick(ctx, user_input):
     await prune(ctx, "3")
 
 
-async def add_role_to_user(user_id):
-  guild = bot.get_guild(
-      1203342217519964170)  # Replace YOUR_GUILD_ID with your guild's ID
-  user = guild.get_member(user_id)
-  if user is None:
-    print(f"User with ID {user_id} not found in the guild.")
-    return
 
-  role = guild.get_role(
-      1212090229444583464
-  )  # Replace YOUR_ROLE_ID with the role's ID you want to add
-  if role is None:
-    print(f"Role with ID {1212090229444583464} not found in the guild.")
-    return
-
-  await user.add_roles(role)
-  print(f"Role {role.name} added to user {user.name}.")
 
 
 @bot.event
@@ -447,7 +489,7 @@ async def on_message(message):
     if message.content.isdigit() == True:
       if message.content == "123":
         await message.author.send("you are verified")
-        await add_role_to_user(message.author.id)
+        await add_role_to_user(message.author.id,1212090229444583464)
       else:
         await message.author.send("invalid code, try again")
   await bot.process_commands(message)
@@ -465,5 +507,11 @@ async def refresh(ctx):
     await prune(ctx, "2")
 
 
+
+
+
+
 bot.run(
     'MTIwNjYzMDk4MzYzNDI1NTg3Mg.GbIrWY.f4L3H4eYVc1TPRZXcBKleNWR0yRrcK-Wcm0nPk')
+
+
