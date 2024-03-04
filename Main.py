@@ -328,76 +328,43 @@ async def kill(ctx):
       description="Are you sure you want to shut down the bot?",
       color=0x00ffff,  # Adjust color as needed
       timestamp=datetime.datetime.now())
-  killembed.add_field(
-      name="Confirmation",
-      value="React with ✅ to confirm shutdown, or ❌ to cancel.",
-      inline=False)
+  
+  killembed.add_field(name="Confirmation",
+                      value= "`Once shut down, it can only be restarted using the server!`",
+                      inline=False)
+  killembed.set_thumbnail(url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJGvnN7ou7F3pkGQQpIFtYNvbrmb5eiXGFPw&s")
+  button2 = discord.ui.Button(label="!!! SHUTDOWN !!!",
+                                style=discord.ButtonStyle.danger)
+
+  async def button2_callback(interaction):
+      await interaction.response.defer()
+      print(f"initiated shut down by {interaction.user.name}")
+      message4 = await interaction.followup.send(f"The bot is shutting down",ephemeral=True)
+      await bot.close()
+
+  button2.callback = button2_callback
+
+  view = discord.ui.View()
+  view.add_item(button2)
+  
+  
   if isinstance(ctx.channel, discord.DMChannel):
-    if str(ctx.author) == "cloak2822":
-      confirmation_msg = await ctx.send(embed=killembed)
-      await confirmation_msg.add_reaction("✅")
-      await confirmation_msg.add_reaction("❌")
-
-      def check(reaction, user):
-        return user == ctx.author and str(reaction.emoji) in [
-            "✅", "❌"
-        ] and reaction.message == confirmation_msg
-
-      try:
-        reaction, _ = await bot.wait_for("reaction_add",
-                                         timeout=30,
-                                         check=check)
-        await ctx.send("Thanks for confirming.")
-      except asyncio.TimeoutError:
-        await ctx.send("Confirmation timed out. Shutting down canceled.")
-      else:
-        if str(reaction.emoji) == "✅":
-          await ctx.send("Shutting down...\nWaffle will miss you! :C")
-          await bot.close()
-        else:
-          await ctx.send("Shutdown canceled.")
-    if str(ctx.author) != "cloak2822":
-
+    if int(ctx.author.id) == 842732618491494432:
+      confirmation_msg = await ctx.send(embed=killembed,view = view)
+    else:
       await ctx.send("nice try Loser!,\nwe got you!")
       print(
-          f"user {ctx.author} tried to shut down the bot without permission!")
+          f"{ctx.author} tried to shut down the bot without permission! -> id : {ctx.author.id}")
       return
 
   if not isinstance(ctx.channel, discord.DMChannel):
     required_role_id = 1207733658237009920
     required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
     if required_role in ctx.author.roles:
-
-      confirmation_msg = await ctx.send(embed=killembed)
-      await confirmation_msg.add_reaction("✅")
-      await confirmation_msg.add_reaction("❌")
-
-      def check(reaction, user):
-        return user == ctx.author and str(reaction.emoji) in [
-            "✅", "❌"
-        ] and reaction.message == confirmation_msg
-
-      try:
-        reaction, _ = await bot.wait_for("reaction_add",
-                                         timeout=30,
-                                         check=check)
-        await ctx.send("Thanks for confirming.")
-      except asyncio.TimeoutError:
-        await ctx.send("Confirmation timed out. Shutting down canceled.")
-        await asyncio.sleep(3)
-        await prune(ctx, "4")
-      else:
-        if str(reaction.emoji) == "✅":
-          await ctx.send("Shutting down...\nWaffle will miss you! :C")
-          await bot.close()
-        else:
-          await asyncio.sleep(3)
-          await prune(ctx, "4")
-
+      confirmation_msg = await ctx.send(embed=killembed,view = view)
     else:
-      await ctx.send("You do not have permission to use this command.")
-      await asyncio.sleep(3)
-      await prune(ctx, "3")
+      print(f"{ctx.author.name} tried to shut down the bot without permission! -> id : {ctx.author.id}")
+      return
 
 
 @bot.command()
