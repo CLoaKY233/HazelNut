@@ -475,10 +475,10 @@ async def refresh(ctx):
 
 
 
+token = os.getenv('BOT_TOKEN')
 
 
 
-bot.run(
-    'MTIwNjYzMDk4MzYzNDI1NTg3Mg.GbIrWY.f4L3H4eYVc1TPRZXcBKleNWR0yRrcK-Wcm0nPk')
+bot.run(token)
 
 
