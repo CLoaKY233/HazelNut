@@ -5,6 +5,7 @@ import time
 import datetime
 import csv
 import os
+import chat_exporter 
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
@@ -564,6 +565,38 @@ async def refresh(ctx):
         await ctx.send("You do not have permission to use this command.")
         await asyncio.sleep(3)
         await prune(ctx, "2")
+
+
+@bot.command(name="export")
+async def export_channel_messages(ctx):
+    try:
+        await prune(ctx,"2")
+        channel=ctx.channel
+         # Get the current working directory
+        current_dir = os.getcwd()
+        
+        # Construct the file path for storing messages
+        file_path = os.path.join(current_dir, f"{channel.name}_messages.txt")
+        # Open the file for writing
+        with open(file_path, 'w', encoding='utf-8') as file:
+            # Fetch channel
+            
+            if not channel:
+                await ctx.send("Channel not found.")
+                return
+            
+            # Fetch messages from the channel
+            async for message in channel.history(limit=None):
+                timestamp = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                sender = message.author.name
+                content = message.content
+                file.write(f"{timestamp} | {sender}: {content}\n")
+        
+        await ctx.send(f"Messages exported successfully to '{file_path}'")
+    
+    except Exception as e:
+        await ctx.send(f"Error exporting messages: {e}")
+
 
 
 token = os.getenv("BOT_TOKEN")
