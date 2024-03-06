@@ -97,6 +97,9 @@ async def on_ready():
       new_channel = await guild.create_text_channel(channel_name,
                                                     category=category1,
                                                     overwrites=overwrites)
+      role = discord.utils.get(guild.roles, id=1214200928064766034)
+      await interaction.user.add_roles(role)
+      
       await new_channel.send(interaction.user.mention)
 
       message2 = await interaction.followup.send(
@@ -254,6 +257,26 @@ async def on_ready():
 
 
 @bot.command()
+async def close(ctx):
+    if ctx.channel.category:
+      if ctx.channel.category == bot.get_channel(1213021742780514336):
+        for member in ctx.channel.members:
+          guild = bot.get_guild(1203342217519964170)
+          role = discord.utils.get(guild.roles, id=1214200928064766034)
+          if role in member.roles:
+            await member.remove_roles(role)
+            overwrites = {
+              guild.default_role: discord.PermissionOverwrite(read_messages=False), member: discord.PermissionOverwrite(read_messages=False) 
+              }
+            old_name = ctx.channel.name
+            await ctx.channel.edit(name = f"{old_name}-closed",overwrites=overwrites,category=discord.utils.get(guild.categories, id=1214909385600671745))
+      else:
+        await ctx.send("invalid category to use this command!")
+    else:
+      await ctx.send("invalid channel to use this command!")
+
+
+@bot.command()
 async def hello(ctx):
   greetings = discord.Embed(title=f"Hello from {bot.user.display_name}",
                             color=0x00F069)
@@ -289,7 +312,7 @@ async def prune(ctx, num_messages=""):
     await ctx.send(f"Pruning 3 messages from this channel.")
     await asyncio.sleep(3)
     
-    await ctx.channel.purge(limit = 2)
+    await ctx.channel.purge(limit = 3)
     return
   
   if isinstance(ctx.channel, discord.DMChannel):
