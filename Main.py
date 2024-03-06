@@ -283,6 +283,15 @@ async def profile(ctx):
 
 @bot.command()
 async def prune(ctx, num_messages=""):
+  
+  if not ctx.channel.permissions_for(ctx.author).manage_messages:
+    await ctx.send("You do not have permission to use this command.")
+    await ctx.send(f"Pruning 3 messages from this channel.")
+    await asyncio.sleep(3)
+    
+    await ctx.channel.purge(limit = 2)
+    return
+  
   if isinstance(ctx.channel, discord.DMChannel):
     await ctx.send("You cannot prune messages in DMs.")
     return
