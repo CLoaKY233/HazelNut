@@ -566,7 +566,7 @@ async def refresh(ctx):
         await prune(ctx, "2")
 
 
-token = os.getenv("BOT_TOKEN")
+# token = os.getenv("BOT_TOKEN")
 
 
-bot.run(token)
+bot.run("MTIwNjYzMDk4MzYzNDI1NTg3Mg.G2p4wT.kc-_zLJpG36kEohueIMv6QASAEOZJAoX5k4ddg")
