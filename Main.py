@@ -569,4 +569,4 @@ async def refresh(ctx):
 # token = os.getenv("BOT_TOKEN")
 
 
-bot.run("MTIwNjYzMDk4MzYzNDI1NTg3Mg.G2p4wT.kc-_zLJpG36kEohueIMv6QASAEOZJAoX5k4ddg")
+bot.run("MTIwNjYzMDk4MzYzNDI1NTg3Mg.GsWQWT.IJJOG9_itxhLkx8sJQfy_UsVGb1DNEZDiH9_9Y")
