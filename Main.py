@@ -567,35 +567,42 @@ async def refresh(ctx):
         await prune(ctx, "2")
 
 
-@bot.command(name="export")
+@bot.command(name="delete")#add to embed later!
 async def export_channel_messages(ctx):
-    try:
-        await prune(ctx,"2")
-        channel=ctx.channel
-         # Get the current working directory
-        current_dir = os.getcwd()
-        
-        # Construct the file path for storing messages
-        file_path = os.path.join(current_dir, f"{channel.name}_messages.txt")
-        # Open the file for writing
-        with open(file_path, 'w', encoding='utf-8') as file:
-            # Fetch channel
-            
-            if not channel:
-                await ctx.send("Channel not found.")
-                return
-            
-            # Fetch messages from the channel
-            async for message in channel.history(limit=None):
-                timestamp = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
-                sender = message.author.name
-                content = message.content
-                file.write(f"{timestamp} | {sender}: {content}\n")
-        
-        await ctx.send(f"Messages exported successfully to '{file_path}'")
-    
-    except Exception as e:
-        await ctx.send(f"Error exporting messages: {e}")
+        if ctx.channel.category:
+            if ctx.channel.category == bot.get_channel(1214909385600671745):
+                try:
+                    await prune(ctx,"2")
+                    channel=ctx.channel
+                    # Get the current working directory
+                    if not os.path.exists("deleted_channel_logs"):
+                        os.mkdir("deleted_channel_logs")
+                    current_dir = os.path.join(os.getcwd(), "deleted_channel_logs")
+                    # Construct the file path for storing messages
+                    file_path = os.path.join(current_dir, f"{channel.name}_messages.txt")
+                    # Open the file for writing
+                    with open(file_path, 'w', encoding='utf-8') as file:
+                        # Fetch channel
+                        
+                        
+                        # Fetch messages from the channel
+                        async for message in channel.history(limit=None):
+                            timestamp = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                            sender = message.author.name
+                            content = message.content
+                            file.write(f"{timestamp} | {sender}: {content}\n")
+                    
+                    await ctx.send(f"Messages exported successfully to '{file_path}'")
+                    await asyncio.sleep(5)
+                    await channel.delete()
+                    
+                
+                except Exception as e:
+                    await ctx.send(f"Error exporting messages: {e}")
+            else:
+                await ctx.send("invalid category to use this command!")
+        else:
+            await ctx.send("invalid channel to use this command!")
 
 
 
