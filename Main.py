@@ -114,7 +114,7 @@ async def on_ready():
             new_channel = await guild.create_text_channel(
                 channel_name, category=category1, overwrites=overwrites
             )
-            
+
             await interaction.user.add_roles(role)
 
             await new_channel.send(interaction.user.mention)
