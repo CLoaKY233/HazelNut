@@ -545,7 +545,7 @@ async def kick(ctx, user_input):
 async def on_message(message):
     if isinstance(message.channel, discord.DMChannel) and message.author != bot.user:
         print(f"Received DM from {message.author}: {message.content}")
-        if message.content.isdigit() == True:
+        if message.content.isdigit() is True:
             if message.content == "123":
                 await message.author.send("you are verified")
                 await add_role_to_user(message.author.id, 1212090229444583464)
