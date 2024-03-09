@@ -1,0 +1,138 @@
+import discord
+from discord.ext import commands
+import asyncio
+import config
+from discord.ui import Button,button,View
+
+bot = commands.Bot(
+    command_prefix="?",
+    intents = discord.Intents.all(),
+    status = discord.Status.dnd,
+    activity = discord.Activity(type=discord.ActivityType.watching, name =("Moderating project exhibition!")),
+    guild = discord.Object(id = 1203342217519964170)
+)
+
+
+@bot.event
+async def on_ready():
+    print("bot is online!!")
+    
+    
+@bot.command()
+async def prune(ctx, num_messages=""):
+
+    if not ctx.channel.permissions_for(ctx.author).manage_messages:
+        await ctx.send("You do not have permission to use this command.")
+        await ctx.send(f"Pruning 3 messages from this channel.")
+        await asyncio.sleep(3)
+
+        await ctx.channel.purge(limit=3)
+        return
+
+    if isinstance(ctx.channel, discord.DMChannel):
+        await ctx.send("You cannot prune messages in DMs.")
+        return
+
+    if num_messages.isdigit():
+        num_messages = int(num_messages)
+        if num_messages <= 0:
+            await ctx.send("Please provide a valid number greater than 0.")
+            return
+
+        await ctx.send(f"Pruning {num_messages} messages from this channel.")
+        await ctx.channel.purge(limit=num_messages)
+
+    elif num_messages.casefold() == "all":
+        await ctx.send("Pruning all messages from this channel.")
+        await ctx.channel.purge()
+
+    elif num_messages == "":
+        await ctx.send("How many messages do you want to prune from this channel?")
+
+        def check(message):
+            return message.author == ctx.author and message.channel == ctx.channel
+
+        try:
+            response = await bot.wait_for("message", check=check, timeout=10)
+            if response.content.isdigit():
+                num_messages = int(response.content)
+                await ctx.send(f"Pruning {num_messages} messages from this channel.")
+                await ctx.channel.purge(limit=num_messages)
+            elif response.content.casefold() == "all":
+                await ctx.send("Pruning all messages from this channel.")
+                await ctx.channel.purge()
+            else:
+                await ctx.send("Please enter a valid number.")
+        except asyncio.TimeoutError:
+            await ctx.send("You took too long to respond.")
+    
+
+
+class CreateButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @button(label="Create Ticket",style=discord.ButtonStyle.blurple, emoji="🎫",custom_id="ticketopen")
+    async def ticket(self, interaction: discord.Interaction, button: Button):
+        await interaction.response.defer(ephemeral=True)
+        category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id=1213021742780514336)
+        for ch in category.text_channels:
+            if ch.topic == f"{interaction.user.id} DO NOT CHANGE THE TOPIC OF THIS CHANNEL!":
+                await interaction.followup.send("You already have a ticket in {0}".format(ch.mention), ephemeral=True)
+                return
+
+        r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            r1: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
+            interaction.user: discord.PermissionOverwrite(read_messages = True, send_messages=True),
+            interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        channel = await category.create_text_channel(
+            name=str(interaction.user),
+            topic=f"{interaction.user.id} DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
+            overwrites=overwrites
+        )
+        await channel.send(
+            embed=discord.Embed(
+                title="Ticket Created!",
+                description=f"Don't ping a staff member, they will be here soon.\n{interaction.user.mention}'s ticket",
+                color = discord.Color.green()
+            ),
+
+        )
+        await interaction.followup.send(
+            embed= discord.Embed(
+                description = "Created your ticket in {0}".format(channel.mention),
+                color = discord.Color.blurple()
+            ),
+            ephemeral=True
+        )
+
+
+
+@bot.command(name  = "ticket")
+@commands.has_permissions(administrator=True)
+async def ticket(ctx):
+    await prune(ctx, "2")
+    channel = bot.get_channel(1212442019302215700)
+    await channel.send(
+        embed = discord.Embed(
+            description = "press the button to create a new ticket"
+        ),
+        view = CreateButton()
+    )
+    
+
+
+
+
+
+
+
+
+
+
+
+
+bot.run('MTIxNjAzODI0NTM5ODQ3ODk5OA.GDLO5b.4F4xuLh224JcJ6oOrk9Q3RslJF4QOSfy54gD78')
