@@ -221,5 +221,14 @@ async def ticket(ctx):
     )
     
 
+@bot.command(name = "restart")
+async def close_bot(ctx):
+    required_role_id = 1207733658237009920
+    required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
+    if required_role in ctx.author.roles:
+        await ctx.send("Closing the bot...")
+        await bot.close()
+    else:
+        await ctx.send("You don't have the permission to use this command")
 
 bot.run('MTIxNjAzODI0NTM5ODQ3ODk5OA.GDLO5b.4F4xuLh224JcJ6oOrk9Q3RslJF4QOSfy54gD78')
