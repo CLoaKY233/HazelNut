@@ -5,6 +5,7 @@ import config
 from discord.ui import Button,button,View
 import chat_exporter
 import os
+import datetime
 
 bot = commands.Bot(
     command_prefix="?",
@@ -15,6 +16,36 @@ bot = commands.Bot(
 )
 
 
+
+        
+
+
+
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+    channel = bot.get_channel(1207734746981998614)
+    hello = discord.Embed(
+        title=f"Hello from {bot.user.display_name}",
+        color=0x00FFFF,
+        timestamp=datetime.datetime.now(),
+    )
+    try:
+        hello.set_thumbnail(url=bot.user.avatar.url)
+    except AttributeError:  
+        hello.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
+    hello.add_field(
+        name="What can One/1 do!",
+        value=f"{bot.user.display_name} will handle this exhibition with precision and care!",
+        inline=False,
+    )
+    await channel.send(embed=hello)
+    bot.add_view(CreateButton())
+    bot.add_view(CloseButton())
+    bot.add_view(TrashButton())
+    
+    
+    
 
 async def log(channel: discord.TextChannel):
     directory = os.path.join(os.getcwd(), "Data", "Logs")
@@ -34,16 +65,8 @@ async def log(channel: discord.TextChannel):
         with open(filepath, 'a', encoding='utf-8') as file:
             file.write(f"{timestamp} | {sender}: {content}\n")
 
-        
-
-
-
-@bot.event
-async def on_ready():
-    print("bot is online!!")
-    bot.add_view(CreateButton())
-    bot.add_view(CloseButton())
-    bot.add_view(TrashButton())
+    
+    
     
     
 @bot.command()
