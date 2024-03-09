@@ -14,9 +14,15 @@ bot = commands.Bot(
 )
 
 
+    
+    
+
 @bot.event
 async def on_ready():
     print("bot is online!!")
+    bot.add_view(CreateButton())
+    bot.add_view(CloseButton())
+    bot.add_view(TrashButton())
     
     
 @bot.command()
@@ -109,6 +115,7 @@ class CreateButton(View):
             ),
             ephemeral=True
         )
+   
 
 
 class CloseButton(View):
@@ -166,16 +173,6 @@ async def ticket(ctx):
         view = CreateButton()
     )
     
-
-
-
-
-
-
-
-
-
-
 
 
 bot.run('MTIxNjAzODI0NTM5ODQ3ODk5OA.GDLO5b.4F4xuLh224JcJ6oOrk9Q3RslJF4QOSfy54gD78')
