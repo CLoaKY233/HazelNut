@@ -8,7 +8,7 @@ bot = commands.Bot(
     command_prefix="?",
     intents = discord.Intents.all(),
     status = discord.Status.dnd,
-    activity = discord.Activity(type=discord.ActivityType.watching, name =("Moderating project exhibition!")),
+    activity = discord.Activity(type=discord.ActivityType.watching ,name =("over VITians")),
     guild = discord.Object(id = 1203342217519964170)
 )
 
@@ -116,6 +116,7 @@ class CreateButton(View):
 async def ticket(ctx):
     await prune(ctx, "2")
     channel = bot.get_channel(1212442019302215700)
+    await channel.purge()
     await channel.send(
         embed = discord.Embed(
             description = "press the button to create a new ticket"
