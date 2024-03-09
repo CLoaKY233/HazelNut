@@ -1,10 +1,7 @@
 import asyncio
 import discord
 from discord.ext import commands
-import time
 import datetime
-import csv
-import os
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
