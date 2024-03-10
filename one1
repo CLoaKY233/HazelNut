@@ -21,7 +21,6 @@ bot = commands.Bot(
 
 
 
-
 @bot.event
 async def on_command_error(ctx, error):
     # Check if the error occurred in the command invocation context
@@ -58,13 +57,17 @@ async def on_command(ctx):
                     description=f"Command: {ctx.command}",
                     color=discord.Color.dark_teal()
                 ).add_field(name="User", value=ctx.author.mention, inline=False
-                ).add_field(name="Channel", value=ctx.channel.mention, inline=False
+                ).add_field(name="Channel", value=ctx.channel.mention 
+                            if not isinstance(ctx.channel,discord.DMChannel) 
+                            else "Direct Messages",inline=False
                 )
             )
         else:
             print(f"Channel with ID {channel_id} not found.")
 
     await send_command_log(channel_id)
+
+
 
 
 @bot.event
@@ -91,6 +94,8 @@ async def on_ready():
     bot.add_view(TrashButton())
     bot.add_view(CreateTeamButton())
     bot.add_view(verifyButton())
+
+
 
 
 class verifyButton(View):
@@ -319,8 +324,7 @@ async def close_bot(ctx):
         await ctx.send("Closing the bot...")
         await bot.close()
     else:
-        await ctx.send("You don't have the permission to use this command")
-        
+        await ctx.send("You don't have the permission to use this command")   
 
 
 
