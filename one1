@@ -117,13 +117,12 @@ class verifyButton(View):
             return message.author == interaction.user and message.content == "123"
         
         try:
-            message = await bot.wait_for("message", check=check, timeout=10)
+            message = await bot.wait_for("message", check=check, timeout=40)
             role = discord.utils.get(guild.roles, id = 1212090229444583464)
             await interaction.user.add_roles(role)
             await interaction.user.send("You have been verified and given the 'Verified' role.")
         except asyncio.TimeoutError:
-            await interaction.user.send("Verification timed out. Please try again.")        
-            
+            await interaction.user.send("Verification timed out. Please try again.")
         await interaction.followup.send(
             embed=discord.Embed(
                 title="Message sent!",
@@ -276,6 +275,23 @@ async def log(channel: discord.TextChannel):
 
 
 
+@bot.command(name = "prune")
+async def delete_messages(ctx, amount ="none"):
+    if ctx.author.guild_permissions.administrator:
+        if amount == "none":
+            await ctx.send("Please specify the amount of messages to delete")
+        elif amount.isdigit():
+            await ctx.channel.purge(limit=int(amount))
+            await ctx.send(f"Deleted {amount} messages", delete_after=5)
+        elif amount == "all":
+            await ctx.channel.purge(limit=None)
+            await ctx.send("Deleted all messages", delete_after=5)
+        else:
+            await ctx.send("Please enter a valid number")
+    else:
+        await ctx.send("You don't have the permission to use this command")
+
+
 
 @bot.command(name  = "start")
 #@commands.has_permissions(administrator=True)
@@ -285,7 +301,7 @@ async def start(ctx):
         return
     role = ctx.guild.get_role(1207733658237009920)
     if not role in ctx.author.roles:
-        await ctx.send("You don't have the permission to use this command")
+        await ctx.send("You don't have the permission to use this command",delete_after=5)
         return
     await ctx.channel.purge(limit=1)
     ticketchannel = bot.get_channel(1212442019302215700)
@@ -331,7 +347,3 @@ async def close_bot(ctx):
 
 
 bot.run('MTIxNjAzODI0NTM5ODQ3ODk5OA.GDLO5b.4F4xuLh224JcJ6oOrk9Q3RslJF4QOSfy54gD78')
-
-
-
-
