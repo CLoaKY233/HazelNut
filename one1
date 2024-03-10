@@ -6,6 +6,7 @@ from discord.ui import Button,button,View
 import chat_exporter
 import os
 import datetime
+from discord import Color as c
 
 
 
@@ -17,6 +18,53 @@ bot = commands.Bot(
     guild = discord.Object(id = 1203342217519964170)
 )
 
+
+
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    # Check if the error occurred in the command invocation context
+    if ctx:
+        # Get the channel ID where you want to send the error message
+        error_channel_id = 1216093670084968488  # Replace with the desired channel ID
+        async def send_error_message(channel_id, error_message):
+            channel = bot.get_channel(channel_id)
+            if channel:
+                await channel.send(
+                    embed = discord.Embed(
+                        title="Error Encountered",
+                        description=f"An error occurred: {error_message}",
+                        color=discord.Color.red()
+                        ).add_field(name="User", value=ctx.author.mention, inline=False
+                        ).add_field(name="Channel", value=ctx.channel.mention, inline=False
+                        )
+                    )
+            else:
+                print(f"Channel with ID {channel_id} not found.")
+
+        await send_error_message(error_channel_id, error)
+    else:
+        print(f"An error occurred outside of a command invocation: {error}")
+@bot.event
+async def on_command(ctx):
+    channel_id = 1216397600387895297
+    async def send_command_log(channel_id):
+        channel = bot.get_channel(channel_id)
+        if channel:
+            await channel.send(
+                embed=discord.Embed(
+                    title="Command Invoked",
+                    description=f"Command: {ctx.command}",
+                    color=discord.Color.dark_teal()
+                ).add_field(name="User", value=ctx.author.mention, inline=False
+                ).add_field(name="Channel", value=ctx.channel.mention, inline=False
+                )
+            )
+        else:
+            print(f"Channel with ID {channel_id} not found.")
+
+    await send_command_log(channel_id)
 
 
 @bot.event
@@ -42,10 +90,43 @@ async def on_ready():
     bot.add_view(CloseButton())
     bot.add_view(TrashButton())
     bot.add_view(CreateTeamButton())
-    
+    bot.add_view(verifyButton())
 
 
+class verifyButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
 
+    @button(label="Verify ✅",style = discord.ButtonStyle.success ,custom_id = "verify")
+    async def verify(self,interaction: discord.Interaction,button:Button):
+        await interaction.response.defer(ephemeral=True)
+        await interaction.user.send(
+            embed=discord.Embed(
+                title="Verify",
+                description="Verify using the OTP we sent you through Mail!",
+                color=discord.Color.blurple()
+            ).set_thumbnail(url = bot.user.avatar.url)
+        )
+        guild = bot.get_guild(1203342217519964170)
+        def check(message):
+            return message.author == interaction.user and message.content == "123"
+        
+        try:
+            message = await bot.wait_for("message", check=check, timeout=10)
+            role = discord.utils.get(guild.roles, id = 1212090229444583464)
+            await interaction.user.add_roles(role)
+            await interaction.user.send("You have been verified and given the 'Verified' role.")
+        except asyncio.TimeoutError:
+            await interaction.user.send("Verification timed out. Please try again.")        
+            
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="Message sent!",
+                description=f"Please check for {bot.user.display_name} in your dm!",
+                color = discord.Color.green()
+            ),
+            ephemeral=True
+        )
 class CreateButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -124,13 +205,12 @@ class TrashButton(View):
         await interaction.channel.send("Deleting the ticket in 3 seconds")
         await asyncio.sleep(3)
 
-        await interaction.channel.delete()
-        
+        await interaction.channel.delete()    
 class CreateTeamButton(View):
     def __init__(self):
         super().__init__(timeout=None)
         
-    @button(label="Create Team", style=discord.ButtonStyle.green, custom_id="team_create_button", emoji="🦁")
+    @button(label="Create Team", style=discord.ButtonStyle.secondary, custom_id="team_create_button", emoji="🦁")
 
     async def team(self, interaction: discord.Interaction, button: Button):
         await interaction.response.defer(ephemeral=True)
@@ -171,22 +251,6 @@ class CreateTeamButton(View):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 async def log(channel: discord.TextChannel):
     directory = os.path.join(os.getcwd(), "Data", "Logs")
     if not os.path.exists(directory):
@@ -208,12 +272,16 @@ async def log(channel: discord.TextChannel):
 
 
 
-
-
-
 @bot.command(name  = "start")
-@commands.has_permissions(administrator=True)
+#@commands.has_permissions(administrator=True)
 async def start(ctx):
+    if ctx.guild is None:
+        await ctx.send("This command can only be used in the Ease Exhibit server")
+        return
+    role = ctx.guild.get_role(1207733658237009920)
+    if not role in ctx.author.roles:
+        await ctx.send("You don't have the permission to use this command")
+        return
     await ctx.channel.purge(limit=1)
     ticketchannel = bot.get_channel(1212442019302215700)
     await ticketchannel.purge()
@@ -231,6 +299,17 @@ async def start(ctx):
         ),
         view = CreateTeamButton()
     )
+    verifychannel=bot.get_channel(1212094690514698331)
+    await verifychannel.purge()
+    await verifychannel.send(
+        embed = discord.Embed(
+            description="click the button below to start the verification process!"
+        ),
+        view = verifyButton()
+    )
+
+
+
 
 @bot.command(name = "restart")
 async def close_bot(ctx):
@@ -242,6 +321,8 @@ async def close_bot(ctx):
     else:
         await ctx.send("You don't have the permission to use this command")
         
+
+
 
 
 
