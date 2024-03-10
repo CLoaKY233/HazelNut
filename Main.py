@@ -576,7 +576,7 @@ async def refresh(ctx):
         await prune(ctx, "2")
 
 
-@bot.command(name="export")
+@bot.command(name="delete")#add to embed later!
 async def export_channel_messages(ctx):
     try:
         await prune(ctx, "2")
