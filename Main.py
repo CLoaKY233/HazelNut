@@ -5,9 +5,10 @@ import time
 import datetime
 import csv
 import os
-import chat_exporter 
+import chat_exporter
 
 intents = discord.Intents.all()
+intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
@@ -97,25 +98,26 @@ async def on_ready():
             role = discord.utils.get(guild.roles, id=1214200928064766034)
             channel_names_list = [channel.name for channel in guild.channels]
             if role in interaction.user.roles:
-              if channel_name in channel_names_list:
-                existing_channel = await find_channel(channel_name)
-                message3 = await interaction.followup.send(
-                    f"{interaction.user.mention} you already have a ticket! -> <#{existing_channel}> ",
-                    ephemeral=True,
-                )
-              else:
-                message3 = await interaction.followup.send(
-                    f"{interaction.user.mention} you already have a ticket!",
-                    ephemeral=True,
-                )    
-              await asyncio.sleep(10)
-              await message3.delete()
-              return
-            category1 = discord.utils.get(guild.categories, id=1213021742780514336)
+                if channel_name in channel_names_list:
+                    existing_channel = await find_channel(channel_name)
+                    message3 = await interaction.followup.send(
+                        f"{interaction.user.mention} you already have a ticket! -> <#{existing_channel}> ",
+                        ephemeral=True,
+                    )
+                else:
+                    message3 = await interaction.followup.send(
+                        f"{interaction.user.mention} you already have a ticket!",
+                        ephemeral=True,
+                    )
+                await asyncio.sleep(10)
+                await message3.delete()
+                return
+            category1 = discord.utils.get(
+                guild.categories, id=1213021742780514336)
             new_channel = await guild.create_text_channel(
                 channel_name, category=category1, overwrites=overwrites
             )
-            
+
             await interaction.user.add_roles(role)
 
             await new_channel.send(interaction.user.mention)
@@ -161,11 +163,13 @@ async def on_ready():
         async def button_callback(interaction):
 
             await interaction.response.defer()
-            msgembed = discord.Embed(title=f"Hello! {interaction.channel.mention}")
+            msgembed = discord.Embed(
+                title=f"Hello! {interaction.channel.mention}")
             try:
                 msgembed.set_thumbnail(url=interaction.user.avatar.url)
             except AttributeError:
-                msgembed.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
+                msgembed.set_thumbnail(
+                    url="https://wallpaper.dog/large/10964102.jpg")
             msgembed.add_field(
                 name="Verification",
                 value="please enter the one time verification code to verify yourself!",
@@ -235,11 +239,14 @@ async def on_ready():
                 await asyncio.sleep(10)
                 await message3.delete()
                 return
-            category1 = discord.utils.get(guild.categories, id=1214133586232475708)
+            category1 = discord.utils.get(
+                guild.categories, id=1214133586232475708)
 
             new_channel = await guild.create_text_channel(
                 channel_name, category=category1, overwrites=overwrites
             )
+            
+            await create_channel_and_save_creator(interaction.user, new_channel)
             await add_role_to_user(interaction.user.id, 1214133687181123624)
             await new_channel.send(interaction.user.mention)
 
@@ -317,7 +324,7 @@ async def rename(ctx, Newname="-"):
             channel = ctx.channel
             oldname = channel.name
             await channel.edit(name=Newname)
-            await channel.send(f"channel has been renamed from {oldname} to {channel.name}" )
+            await channel.send(f"channel has been renamed from {oldname} to {channel.name}")
         else:
             await ctx.send("invalid category to use this command!")
     else:
@@ -348,7 +355,8 @@ async def profile(ctx):
     embed = discord.Embed(
         title=f"{bot.user.display_name}'s Profile", color=0x00FFFF
     )  # Adjust color as needed
-    embed.set_thumbnail(url=bot.user.avatar.url)  # Use avatar.url for avatar image
+    # Use avatar.url for avatar image
+    embed.set_thumbnail(url=bot.user.avatar.url)
     embed.add_field(name="Username", value=bot.user.name, inline=False)
     embed.add_field(name="User ID", value=bot.user.id, inline=False)
     await ctx.send(embed=embed)
@@ -488,7 +496,8 @@ async def kick(ctx, user_input):
                 kickembed.set_thumbnail(url=user.avatar.url)
             except AttributeError:  # Catch AttributeError if the user has no avatar
                 # Set a default thumbnail URL
-                kickembed.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
+                kickembed.set_thumbnail(
+                    url="https://wallpaper.dog/large/10964102.jpg")
 
             confirmation_msg = await ctx.send(embed=kickembed)
             await confirmation_msg.add_reaction("✅")
@@ -570,33 +579,50 @@ async def refresh(ctx):
 @bot.command(name="export")
 async def export_channel_messages(ctx):
     try:
-        await prune(ctx,"2")
-        channel=ctx.channel
-         # Get the current working directory
+        await prune(ctx, "2")
+        channel = ctx.channel
+        # Get the current working directory
         current_dir = os.getcwd()
-        
+
         # Construct the file path for storing messages
         file_path = os.path.join(current_dir, f"{channel.name}_messages.txt")
         # Open the file for writing
         with open(file_path, 'w', encoding='utf-8') as file:
             # Fetch channel
-            
+
             if not channel:
                 await ctx.send("Channel not found.")
                 return
-            
+
             # Fetch messages from the channel
             async for message in channel.history(limit=None):
                 timestamp = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
                 sender = message.author.name
                 content = message.content
                 file.write(f"{timestamp} | {sender}: {content}\n")
-        
+
         await ctx.send(f"Messages exported successfully to '{file_path}'")
-    
+
     except Exception as e:
         await ctx.send(f"Error exporting messages: {e}")
 
+
+async def create_channel_and_save_creator(user,channel):
+    try:
+        current_dir = os.getcwd()
+        file_path = os.path.join(current_dir, f"{user.name}_members.csv")
+
+        # Save the name of the user who triggered the interaction to the CSV file
+        with open(file_path, 'w', newline='', encoding='utf-8') as file:
+            fieldnames = ['Member Name']
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerow({'Member Name': user.name})
+
+        await channel.send(f"Channel creator saved to '{file_path}'")
+
+    except Exception as e:
+        await channel.send(f"Error creating channel: {e}")
 
 
 token = os.getenv("BOT_TOKEN")
