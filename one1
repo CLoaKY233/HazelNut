@@ -7,6 +7,8 @@ import chat_exporter
 import os
 import datetime
 
+
+
 bot = commands.Bot(
     command_prefix="?",
     intents = discord.Intents.all(),
@@ -14,10 +16,6 @@ bot = commands.Bot(
     activity = discord.Activity(type=discord.ActivityType.watching ,name =("over VITians")),
     guild = discord.Object(id = 1203342217519964170)
 )
-
-
-
-        
 
 
 
@@ -43,80 +41,9 @@ async def on_ready():
     bot.add_view(CreateButton())
     bot.add_view(CloseButton())
     bot.add_view(TrashButton())
+    bot.add_view(CreateTeamButton())
     
-    
-    
 
-async def log(channel: discord.TextChannel):
-    directory = os.path.join(os.getcwd(), "Data", "Logs")
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    filename = f"log_{channel.id}.txt"
-    filepath = os.path.join(directory, filename)
-
-    # Check if the log file already exists
-    if os.path.exists(filepath):
-        return  # Exit the function if the log file already exists
-
-    async for message in channel.history(limit=None, oldest_first=True):
-        timestamp = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        sender = message.author.name
-        content = message.content
-        with open(filepath, 'a', encoding='utf-8') as file:
-            file.write(f"{timestamp} | {sender}: {content}\n")
-
-    
-    
-    
-    
-@bot.command()
-async def prune(ctx, num_messages=""):
-
-    if not ctx.channel.permissions_for(ctx.author).manage_messages:
-        await ctx.send("You do not have permission to use this command.")
-        await ctx.send(f"Pruning 3 messages from this channel.")
-        await asyncio.sleep(3)
-
-        await ctx.channel.purge(limit=3)
-        return
-
-    if isinstance(ctx.channel, discord.DMChannel):
-        await ctx.send("You cannot prune messages in DMs.")
-        return
-
-    if num_messages.isdigit():
-        num_messages = int(num_messages)
-        if num_messages <= 0:
-            await ctx.send("Please provide a valid number greater than 0.")
-            return
-
-        await ctx.send(f"Pruning {num_messages} messages from this channel.")
-        await ctx.channel.purge(limit=num_messages)
-
-    elif num_messages.casefold() == "all":
-        await ctx.send("Pruning all messages from this channel.")
-        await ctx.channel.purge()
-
-    elif num_messages == "":
-        await ctx.send("How many messages do you want to prune from this channel?")
-
-        def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel
-
-        try:
-            response = await bot.wait_for("message", check=check, timeout=10)
-            if response.content.isdigit():
-                num_messages = int(response.content)
-                await ctx.send(f"Pruning {num_messages} messages from this channel.")
-                await ctx.channel.purge(limit=num_messages)
-            elif response.content.casefold() == "all":
-                await ctx.send("Pruning all messages from this channel.")
-                await ctx.channel.purge()
-            else:
-                await ctx.send("Please enter a valid number.")
-        except asyncio.TimeoutError:
-            await ctx.send("You took too long to respond.")
-    
 
 
 class CreateButton(View):
@@ -159,10 +86,6 @@ class CreateButton(View):
             ),
             ephemeral=True
         )
-
-
-
-
 class CloseButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -190,10 +113,7 @@ class CloseButton(View):
             ),
             view = TrashButton()
         )
-        await log(interaction.channel)
-        
-        
-        
+        await log(interaction.channel)  
 class TrashButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -205,21 +125,112 @@ class TrashButton(View):
         await asyncio.sleep(3)
 
         await interaction.channel.delete()
+        
+class CreateTeamButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        
+    @button(label="Create Team", style=discord.ButtonStyle.green, custom_id="team_create_button", emoji="🦁")
+
+    async def team(self, interaction: discord.Interaction, button: Button):
+        await interaction.response.defer(ephemeral=True)
+        category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id=1214133586232475708)
+        for ch in category.text_channels:
+            if ch.topic == f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!":
+                await interaction.followup.send("You already are a part of a Team => {0}".format(ch.mention), ephemeral=True)
+                return
+
+        r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            r1: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
+            interaction.user: discord.PermissionOverwrite(read_messages = True, send_messages=True),
+            interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        channel = await category.create_text_channel(
+            name=f"{interaction.user.name}'s team",
+            topic=f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
+            overwrites=overwrites
+        )
+        await channel.send(
+            embed=discord.Embed(
+                title="Team Created!",
+                description=f"IDK THE DESCRIPTION RN",
+                color = discord.Color.greyple()
+            )
+            #view = CloseButton() -> link to invite more member's button!!!
+        )
+        await interaction.followup.send(
+            embed= discord.Embed(
+                description = "Created your Team in {0}".format(channel.mention),
+                color = discord.Color.blurple()
+            ),
+            ephemeral=True
+        )
 
 
-@bot.command(name  = "ticket")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async def log(channel: discord.TextChannel):
+    directory = os.path.join(os.getcwd(), "Data", "Logs")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    filename = f"log_{channel.id}.txt"
+    filepath = os.path.join(directory, filename)
+
+    # Check if the log file already exists
+    if os.path.exists(filepath):
+        return  # Exit the function if the log file already exists
+
+    async for message in channel.history(limit=None, oldest_first=True):
+        timestamp = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        sender = message.author.name
+        content = message.content
+        with open(filepath, 'a', encoding='utf-8') as file:
+            file.write(f"{timestamp} | {sender}: {content}\n")
+
+
+
+
+
+
+
+@bot.command(name  = "start")
 @commands.has_permissions(administrator=True)
-async def ticket(ctx):
-    await prune(ctx, "2")
-    channel = bot.get_channel(1212442019302215700)
-    await channel.purge()
-    await channel.send(
+async def start(ctx):
+    await ctx.channel.purge(limit=1)
+    ticketchannel = bot.get_channel(1212442019302215700)
+    await ticketchannel.purge()
+    await ticketchannel.send(
         embed = discord.Embed(
-            description = "press the button to create a new ticket"
+            description = "press the button to create a new ticket!"
         ),
         view = CreateButton()
     )
-    
+    teamchannel = bot.get_channel(1212798572886757436)
+    await teamchannel.purge()
+    await teamchannel.send(
+        embed=discord.Embed(
+            description="click the button to create a new team!"
+        ),
+        view = CreateTeamButton()
+    )
 
 @bot.command(name = "restart")
 async def close_bot(ctx):
@@ -230,5 +241,12 @@ async def close_bot(ctx):
         await bot.close()
     else:
         await ctx.send("You don't have the permission to use this command")
+        
+
+
 
 bot.run('MTIxNjAzODI0NTM5ODQ3ODk5OA.GDLO5b.4F4xuLh224JcJ6oOrk9Q3RslJF4QOSfy54gD78')
+
+
+
+
