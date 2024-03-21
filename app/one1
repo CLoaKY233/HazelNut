@@ -372,5 +372,5 @@ async def close_bot(ctx):
 
 
 
-
-bot.run('MTIxNjAzODI0NTM5ODQ3ODk5OA.GDLO5b.4F4xuLh224JcJ6oOrk9Q3RslJF4QOSfy54gD78')
+bot.run(os.getenv('DISCORD_TOKEN'))
+# bot.run('MTIxNjAzODI0NTM5ODQ3ODk5OA.GDLO5b.4F4xuLh224JcJ6oOrk9Q3RslJF4QOSfy54gD78')
