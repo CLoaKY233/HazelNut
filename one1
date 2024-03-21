@@ -1,13 +1,12 @@
 import discord
 from discord.ext import commands
 import asyncio
-import config
 from discord.ui import Button,button,View
 import chat_exporter
 import os
 import datetime
 from discord import Color as c
-
+import csv
 
 
 bot = commands.Bot(
@@ -236,10 +235,17 @@ class CreateTeamButton(View):
             topic=f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
             overwrites=overwrites
         )
+        
+        await teamdata(f"{interaction.user.name}")
+  
+        
+        role = interaction.guild.get_role(1214133687181123624)
+        await interaction.user.add_roles(role)
+
         await channel.send(
             embed=discord.Embed(
                 title="Team Created!",
-                description=f"IDK THE DESCRIPTION RN",
+                description=f"The Team was created by {interaction.user.mention}",
                 color = discord.Color.greyple()
             )
             #view = CloseButton() -> link to invite more member's button!!!
@@ -251,7 +257,28 @@ class CreateTeamButton(View):
             ),
             ephemeral=True
         )
+class InviteToTeamButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        
+    @button(label="Join a Team", style=discord.ButtonStyle.green, custom_id="team_join_button", emoji="🦅")   
+    async def team(self, interaction: discord.Interaction, button: Button):
+        await interaction.response.defer(ephemeral=True) 
 
+async def teamdata(teamlead:str):
+    directory = os.path.join(os.getcwd(), "Data", "Teams")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    files = os.listdir(directory)
+    file_count = sum(1 for file in files if os.path.isfile(os.path.join(directory, file)))
+    filename = f"{file_count + 1}.csv"
+    
+    filepath = os.path.join(directory, filename)
+
+    # Write to the CSV file
+    with open(filepath, mode='a', newline='') as file:
+        writer = csv.writer(file, delimiter=',')
+        writer.writerow([f'{teamlead}', 'members'])  # Example data
 
 
 
