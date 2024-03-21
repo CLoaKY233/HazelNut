@@ -8,6 +8,8 @@ import datetime
 from discord import Color as c
 import csv
 
+from discord import *
+
 
 bot = commands.Bot(
     command_prefix="?",
@@ -93,6 +95,11 @@ async def on_ready():
     bot.add_view(TrashButton())
     bot.add_view(CreateTeamButton())
     bot.add_view(verifyButton())
+    bot.add_view(InviteToTeamButton())
+
+
+
+
 
 
 
@@ -101,35 +108,13 @@ class verifyButton(View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @button(label="Verify ✅",style = discord.ButtonStyle.success ,custom_id = "verify")
-    async def verify(self,interaction: discord.Interaction,button:Button):
-        await interaction.response.defer(ephemeral=True)
-        await interaction.user.send(
-            embed=discord.Embed(
-                title="Verify",
-                description="Verify using the OTP we sent you through Mail!",
-                color=discord.Color.blurple()
-            ).set_thumbnail(url = bot.user.avatar.url)
-        )
-        guild = bot.get_guild(1203342217519964170)
-        def check(message):
-            return message.author == interaction.user and message.content == "123"
-        
-        try:
-            message = await bot.wait_for("message", check=check, timeout=40)
-            role = discord.utils.get(guild.roles, id = 1212090229444583464)
-            await interaction.user.add_roles(role)
-            await interaction.user.send("You have been verified and given the 'Verified' role.")
-        except asyncio.TimeoutError:
-            await interaction.user.send("Verification timed out. Please try again.")
-        await interaction.followup.send(
-            embed=discord.Embed(
-                title="Message sent!",
-                description=f"Please check for {bot.user.display_name} in your dm!",
-                color = discord.Color.green()
-            ),
-            ephemeral=True
-        )
+    @button(label="Verify ✅", style=discord.ButtonStyle.success, custom_id="verify")
+    async def verify(self, interaction: discord.Interaction, button: Button):
+        #await interaction.response.defer(ephemeral=True)
+
+        # Create and show the verification modal
+        verification_modal = verifymodal()  # Assuming you have the verifymodal class defined
+        await interaction.response.send_modal(verification_modal)  
 class CreateButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -237,7 +222,7 @@ class CreateTeamButton(View):
         )
         
         await teamdata(f"{interaction.user.name}")
-  
+        
         
         role = interaction.guild.get_role(1214133687181123624)
         await interaction.user.add_roles(role)
@@ -247,7 +232,8 @@ class CreateTeamButton(View):
                 title="Team Created!",
                 description=f"The Team was created by {interaction.user.mention}",
                 color = discord.Color.greyple()
-            )
+            ),
+            view = InviteToTeamButton()
             #view = CloseButton() -> link to invite more member's button!!!
         )
         await interaction.followup.send(
@@ -261,9 +247,56 @@ class InviteToTeamButton(View):
     def __init__(self):
         super().__init__(timeout=None)
         
-    @button(label="Join a Team", style=discord.ButtonStyle.green, custom_id="team_join_button", emoji="🦅")   
-    async def team(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.defer(ephemeral=True) 
+    @button(label="Invite a Member!", style=discord.ButtonStyle.green, custom_id="invite_to_team", emoji="🦅")   
+    async def invite(self, interaction: discord.Interaction, button: Button):
+        await interaction.response.defer(ephemeral=True)
+        await interaction.user.send(
+                embed=discord.Embed(
+                title="Invite a Member!",
+                description=f"To invite a member, Please enter the name of the member you want to invite",
+                color = discord.Color.dark_green()
+                ).set_thumbnail(url = bot.user.avatar.url)
+            )
+        guild = bot.get_guild(1203342217519964170)
+
+
+
+
+class verifymodal(ui.Modal,title = "Verification"):
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Enter the OTP",
+                          style = discord.TextStyle.short,
+                          placeholder="Enter the OTP we sent you through Mail!",
+                          #default = "___",
+                          required=True,
+                          min_length=3,
+                          max_length=3)
+
+
+    async def on_submit(self, interaction: discord.Interaction):
+        otp = self.answer.value
+        if otp == "123": # Replace "123" with your actual verification code
+            
+            role = interaction.guild.get_role(1212090229444583464)
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message(embed = discord.Embed(
+                        title="Congratulations!",
+                        description="You have been verified and given the 'Verified' role.",
+                        color=discord.Color.gold()
+                        ),ephemeral=True
+                    )
+        else:
+            await interaction.response.send_message(
+                        embed = discord.Embed(
+                        title="Incorrect OTP! Please try again!",
+                        description="You will be verified once you enter the correct otp!",
+                        color=discord.Color.red()
+                        ),ephemeral=True)
+
+class invitemodal(ui.Modal,title = "Invite"):
+    pass
+
+
 
 async def teamdata(teamlead:str):
     directory = os.path.join(os.getcwd(), "Data", "Teams")
