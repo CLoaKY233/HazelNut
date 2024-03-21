@@ -22,6 +22,16 @@ bot = commands.Bot(
 
 
 @bot.event
+async def on_member_join(member):
+    role_id = 1220440238812299345  # Replace with the desired role ID
+    role = member.guild.get_role(role_id)
+    await member.add_roles(role)
+
+
+
+
+
+@bot.event
 async def on_command_error(ctx, error):
     # Check if the error occurred in the command invocation context
     if ctx:
@@ -45,6 +55,10 @@ async def on_command_error(ctx, error):
         await send_error_message(error_channel_id, error)
     else:
         print(f"An error occurred outside of a command invocation: {error}")
+        
+        
+        
+        
 @bot.event
 async def on_command(ctx):
     channel_id = 1216397600387895297
@@ -107,7 +121,15 @@ class verifyButton(View):
     @button(label="Verify ✅", style=discord.ButtonStyle.success, custom_id="verify")
     async def verify(self, interaction: discord.Interaction, button: Button):
         #await interaction.response.defer(ephemeral=True)
-
+        role = interaction.guild.get_role(1212090229444583464)
+        if role in interaction.user.roles:
+            await interaction.response.send_message(embed = discord.Embed(
+                        title="You are already verified!",
+                        description="You have already been verified and have the 'Verified' role.",
+                        color=discord.Color.red()
+                        ),ephemeral=True
+                    )
+            return
         # Create and show the verification modal
         verification_modal = verifymodal()  # Assuming you have the verifymodal class defined
         await interaction.response.send_modal(verification_modal)  
@@ -237,11 +259,10 @@ class verifymodal(ui.Modal,title = "Verification"):
                           min_length=3,
                           max_length=3)
 
-
     async def on_submit(self, interaction: discord.Interaction):
         otp = self.answer.value
         if otp == "123": # Replace "123" with your actual verification code
-            
+            unverified = interaction.guild.get_role(1220440238812299345)
             role = interaction.guild.get_role(1212090229444583464)
             await interaction.user.add_roles(role)
             await interaction.response.send_message(embed = discord.Embed(
@@ -250,6 +271,8 @@ class verifymodal(ui.Modal,title = "Verification"):
                         color=discord.Color.gold()
                         ),ephemeral=True
                     )
+            await asyncio.sleep(10)
+            await interaction.user.remove_roles(unverified)
         else:
             await interaction.response.send_message(
                         embed = discord.Embed(
@@ -257,7 +280,6 @@ class verifymodal(ui.Modal,title = "Verification"):
                         description="You will be verified once you enter the correct otp!",
                         color=discord.Color.red()
                         ),ephemeral=True)
-
 class invitemodal(ui.Modal,title = "Invite"):
     pass
 class Ticketmodal(ui.Modal,title = "Ticket"):
