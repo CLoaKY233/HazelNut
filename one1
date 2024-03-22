@@ -291,7 +291,7 @@ class Invitemodal(ui.Modal,title = "Invite"):
         await member.add_roles(role)
         channel = interaction.channel
         await channel.set_permissions(member, read_messages=True, send_messages=True)
-        await channel.send(f"{member.mention} joined the team on ||*{datetime.datetime.now()}*||")
+        await channel.send(f"{member.mention} joined the team on  :  **{datetime.datetime.utcnow()}**")
         await member.send(
             embed=discord.Embed(
                 title="Team Joined!",
