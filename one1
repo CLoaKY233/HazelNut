@@ -188,6 +188,16 @@ class CreateTeamButton(View):
     @button(label="Create Team", style=discord.ButtonStyle.secondary, custom_id="team_create_button", emoji="🦁")
 
     async def team(self, interaction: discord.Interaction, button: Button):
+        role1 = interaction.guild.get_role(1216328643014299709)
+        role2 = interaction.guild.get_role(1214133687181123624)
+        if role1 in interaction.user.roles or role2 in interaction.user.roles:
+            await interaction.response.send_message(embed = discord.Embed(
+                        title="You are already in a team!",
+                        description="You are already in a team and have the 'Team' role.",
+                        color=discord.Color.red()
+                        ),ephemeral=True
+                    )
+            return
         teammodal = Teammodal()
         await interaction.response.send_modal(teammodal) 
 class InviteToTeamButton(View):
