@@ -1,0 +1,524 @@
+import discord
+from discord.ext import commands
+import asyncio
+from discord.ui import Button,button,View
+import chat_exporter
+import os
+import datetime
+from discord import Color as c
+import csv
+from discord import *
+
+
+bot = commands.Bot(
+    command_prefix="?",
+    intents = discord.Intents.all(),
+    status = discord.Status.dnd,
+    activity = discord.Activity(type=discord.ActivityType.watching ,name =("over VITians")),
+    guild = discord.Object(id = 1203342217519964170)
+)
+
+
+
+
+@bot.event
+async def on_member_join(member):
+    role_id = 1220440238812299345  # Replace with the desired role ID
+    role = member.guild.get_role(role_id)
+    await member.add_roles(role)
+
+
+
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    # Check if the error occurred in the command invocation context
+    if ctx:
+        # Get the channel ID where you want to send the error message
+        error_channel_id = 1216093670084968488  # Replace with the desired channel ID
+        async def send_error_message(channel_id, error_message):
+            channel = bot.get_channel(channel_id)
+            if channel:
+                await channel.send(
+                    embed = discord.Embed(
+                        title="Error Encountered",
+                        description=f"An error occurred: {error_message}",
+                        color=discord.Color.red()
+                        ).add_field(name="User", value=ctx.author.mention, inline=False
+                        ).add_field(name="Channel", value=ctx.channel.mention, inline=False
+                        )
+                    )
+            else:
+                print(f"Channel with ID {channel_id} not found.")
+
+        await send_error_message(error_channel_id, error)
+    else:
+        print(f"An error occurred outside of a command invocation: {error}")
+        
+        
+        
+        
+@bot.event
+async def on_command(ctx):
+    channel_id = 1216397600387895297
+    async def send_command_log(channel_id):
+        channel = bot.get_channel(channel_id)
+        if channel:
+            await channel.send(
+                embed=discord.Embed(
+                    title="Command Invoked",
+                    description=f"Command: {ctx.command}",
+                    color=discord.Color.dark_teal()
+                ).add_field(name="User", value=ctx.author.mention, inline=False
+                ).add_field(name="Channel", value=ctx.channel.mention 
+                            if not isinstance(ctx.channel,discord.DMChannel) 
+                            else "Direct Messages",inline=False
+                )
+            )
+        else:
+            print(f"Channel with ID {channel_id} not found.")
+
+    await send_command_log(channel_id)
+
+
+
+
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+    channel = bot.get_channel(1207734746981998614)
+    hello = discord.Embed(
+        title=f"Hello from {bot.user.display_name}",
+        color=0x00FFFF,
+        timestamp=datetime.datetime.now(),
+    )
+    try:
+        hello.set_thumbnail(url=bot.user.avatar.url)
+    except AttributeError:  
+        hello.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
+    hello.add_field(
+        name="What can One/1 do!",
+        value=f"{bot.user.display_name} will handle this exhibition with precision and care!",
+        inline=False,
+    )
+    await channel.send(embed=hello)
+    bot.add_view(CreateButton())
+    bot.add_view(CloseButton())
+    bot.add_view(TrashButton())
+    bot.add_view(CreateTeamButton())
+    bot.add_view(verifyButton())
+    bot.add_view(InviteToTeamButton())
+
+
+
+
+
+class verifyButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @button(label="Verify ✅", style=discord.ButtonStyle.success, custom_id="verify")
+    async def verify(self, interaction: discord.Interaction, button: Button):
+        #await interaction.response.defer(ephemeral=True)
+        role = interaction.guild.get_role(1212090229444583464)
+        if role in interaction.user.roles:
+            await interaction.response.send_message(embed = discord.Embed(
+                        title="You are already verified!",
+                        description="You have already been verified and have the 'Verified' role.",
+                        color=discord.Color.red()
+                        ),ephemeral=True
+                    )
+            return
+        # Create and show the verification modal
+        verification_modal = verifymodal()  # Assuming you have the verifymodal class defined
+        await interaction.response.send_modal(verification_modal)  
+class CreateButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @button(label="Create Ticket",style=discord.ButtonStyle.blurple, emoji="🎫",custom_id="ticketopen")
+    async def ticket(self, interaction: discord.Interaction, button: Button):
+        #await interaction.response.defer(ephemeral=True)
+        ticketmodal = Ticketmodal()
+        await interaction.response.send_modal(ticketmodal)
+class CloseButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @button(label="Close the ticket",style=discord.ButtonStyle.red,custom_id="closeticket",emoji="🔒")
+    async def close(self, interaction: discord.Interaction, button: Button):
+        await interaction.response.defer(ephemeral=True)
+
+        await interaction.channel.send("Closing this ticket in 3 seconds!")
+
+        await asyncio.sleep(3)
+
+        category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id = 1214909385600671745)
+        r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            r1: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
+            interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        await interaction.channel.edit(category=category, overwrites=overwrites)
+        await interaction.channel.send(
+            embed= discord.Embed(
+                description="Ticket Closed!",
+                color = discord.Color.red()
+            ),
+            view = TrashButton()
+        )
+        await log(interaction.channel)  
+class TrashButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @button(label="Delete the ticket", style=discord.ButtonStyle.red, emoji="🚮", custom_id="trash")
+    async def trash(self, interaction: discord.Interaction, button: Button):
+        await interaction.response.defer()
+        await interaction.channel.send("Deleting the ticket in 3 seconds")
+        await asyncio.sleep(3)
+
+        await interaction.channel.delete()    
+class CreateTeamButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        
+    @button(label="Create Team", style=discord.ButtonStyle.secondary, custom_id="team_create_button", emoji="🦁")
+
+    async def team(self, interaction: discord.Interaction, button: Button):
+        teammodal = Teammodal()
+        await interaction.response.send_modal(teammodal) 
+class InviteToTeamButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        
+    @button(label="Invite a Member!", style=discord.ButtonStyle.green, custom_id="invite_to_team", emoji="🦅")   
+    async def invite(self, interaction: discord.Interaction, button: Button):
+        guild = bot.get_guild(1203342217519964170)
+        invitemodal = Invitemodal()
+        await interaction.response.send_modal(invitemodal)
+
+
+
+
+
+class verifymodal(ui.Modal,title = "Verification"):
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Enter the OTP",
+                          style = discord.TextStyle.short,
+                          placeholder="Enter the OTP we sent you through Mail!",
+                          #default = "___",
+                          required=True,
+                          min_length=3,
+                          max_length=3)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        otp = self.answer.value
+        if otp == "123": # Replace "123" with your actual verification code
+            unverified = interaction.guild.get_role(1220440238812299345)
+            role = interaction.guild.get_role(1212090229444583464)
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message(embed = discord.Embed(
+                        title="Congratulations!",
+                        description="You have been verified and given the 'Verified' role.",
+                        color=discord.Color.gold()
+                        ),ephemeral=True
+                    )
+            await asyncio.sleep(10)
+            await interaction.user.remove_roles(unverified)
+        else:
+            await interaction.response.send_message(
+                        embed = discord.Embed(
+                        title="Incorrect OTP! Please try again!",
+                        description="You will be verified once you enter the correct otp!",
+                        color=discord.Color.red()
+                        ),ephemeral=True)
+class Invitemodal(ui.Modal,title = "Invite"):
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Add a Member",
+                          style = discord.TextStyle.long,
+                          placeholder="Enter the user-id of the member you want to invite!",
+                          #default = "Not Provided",
+                          required=True,
+                          min_length=17,
+                          max_length=18)
+    async def on_submit(self, interaction: discord.Interaction):
+        member_id = int(self.answer.value)
+        member = await finduser(member_id)
+        if not member:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Invalid!",
+                    description="The user you entered was not found in the server.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+        verifiedrole = interaction.guild.get_role(1212090229444583464)
+        unverifiedrole = interaction.guild.get_role(1220440238812299345)
+        if (verifiedrole not in member.roles) or (unverifiedrole in member.roles) :
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Verification Error",
+                    description="The user you want to add is not a Verified VITian",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+        role = interaction.guild.get_role(1216328643014299709)
+        if role in member.roles:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="User already in a team!",
+                    description="The user you entered is already in a team.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+        await interaction.response.send_message(
+            embed=discord.Embed(
+                title="User added",
+                description=f"{member.mention} has been added to your team.",
+                color=discord.Color.green()
+            ),
+            ephemeral=True
+        )
+        await member.add_roles(role)
+        channel = interaction.channel
+        await channel.set_permissions(member, read_messages=True, send_messages=True)
+        await channel.send(f"{member.mention} joined the team on ||*{datetime.datetime.now()}*||")
+        await member.send(
+            embed=discord.Embed(
+                title="Team Joined!",
+                description=f"You have been added to a team in {interaction.guild.name}.",
+                color=discord.Color.green()
+            )
+        )
+        
+
+
+
+class Ticketmodal(ui.Modal,title = "Ticket"):
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Create Ticket!",
+                          style = discord.TextStyle.paragraph,
+                          placeholder="Reason to Create this ticket :",
+                          #default = "Not Provided",
+                          required=True,
+                          min_length=5,
+                          max_length=50)
+
+
+    async def on_submit(self, interaction: discord.Interaction):
+        reason = self.answer.value
+        #interaction.response.send_message("you requested to create a ticket! with the reason : {0}".format(reason),ephemeral=True)
+        category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id=1213021742780514336)
+        for ch in category.text_channels:
+            if ch.topic == f"{interaction.user.id} DO NOT CHANGE THE TOPIC OF THIS CHANNEL!":
+                await interaction.response.send_message("You already have a ticket in {0}".format(ch.mention), ephemeral=True)
+                return
+
+        r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            r1: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
+            interaction.user: discord.PermissionOverwrite(read_messages = True, send_messages=True),
+            interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        channel = await category.create_text_channel(
+            name=str(interaction.user),
+            topic=f"{interaction.user.id} DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
+            overwrites=overwrites
+        )
+        await channel.send(embed = discord.Embed(
+                title="Ticket Created!",
+                description=f"Don't ping a staff member, they will be here soon.\n\n-----------------\n{interaction.user.mention}'s ticket",
+                color=discord.Color.green()).set_thumbnail(url=bot.user.avatar.url).set_author(name="BumbleBee", url=bot.user.avatar.url)
+                .add_field(name="Issue", value=reason, inline=False),
+                view = CloseButton()
+                )
+        await interaction.response.send_message(
+            embed= discord.Embed(
+                description = "Created your ticket in {0}".format(channel.mention),
+                color = discord.Color.blurple()
+            ),
+            ephemeral=True
+        )
+class Teammodal(ui.Modal,title = "Team!"):
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Create Team!",
+                          style = discord.TextStyle.short,
+                          placeholder="What would you like to name your team?",
+                          #default = "Not Provided",
+                          required=True,
+                          min_length=3,
+                          max_length=15)
+
+
+    async def on_submit(self, interaction: discord.Interaction):
+        Teamname = self.answer.value
+        #interaction.response.send_message("you requested to create a ticket! with the reason : {0}".format(reason),ephemeral=True)
+        category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id=1214133586232475708)
+        for ch in category.text_channels:
+            if ch.topic == f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!":
+                await interaction.response.send_message("You already are a part of a Team => {0}".format(ch.mention), ephemeral=True)
+                return
+
+        r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            r1: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
+            interaction.user: discord.PermissionOverwrite(read_messages = True, send_messages=True),
+            interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        channel = await category.create_text_channel(
+            name=f"{Teamname}",
+            topic=f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
+            overwrites=overwrites
+        )
+        rolelead = interaction.guild.get_role(1214133687181123624)
+        await interaction.user.add_roles(rolelead)
+        roleteam = interaction.guild.get_role(1216328643014299709)
+        await interaction.user.add_roles(roleteam)
+        await channel.send(
+            embed=discord.Embed(
+                title=f"{Teamname}",
+                description=f"The Team was created by {interaction.user.mention}\nInvite a Member\n• They must be in the server!\n• They must be verified!\n• They must not be in a team!",
+                color = discord.Color.greyple()
+            ),
+            view = InviteToTeamButton()
+            #view = CloseButton() -> link to invite more member's button!!!
+        )
+        await interaction.response.send_message(
+            embed= discord.Embed(
+                description = "Created your Team ".format(channel.mention),
+                color = discord.Color.blurple()
+            ),
+            ephemeral=True
+        )           
+    
+
+
+async def teamdata(teamlead:str):
+    directory = os.path.join(os.getcwd(), "Data", "Teams")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    files = os.listdir(directory)
+    file_count = sum(1 for file in files if os.path.isfile(os.path.join(directory, file)))
+    filename = f"{file_count + 1}.csv"
+    
+    filepath = os.path.join(directory, filename)
+
+    # Write to the CSV file
+    with open(filepath, mode='a', newline='') as file:
+        writer = csv.writer(file, delimiter=',')
+        writer.writerow([f'{teamlead}', 'members'])  # Example data
+
+
+
+async def log(channel: discord.TextChannel):
+    directory = os.path.join(os.getcwd(), "Data", "Logs")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    filename = f"log_{channel.id}.txt"
+    filepath = os.path.join(directory, filename)
+
+    # Check if the log file already exists
+    if os.path.exists(filepath):
+        return  # Exit the function if the log file already exists
+
+    async for message in channel.history(limit=None, oldest_first=True):
+        timestamp = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        sender = message.author.name
+        content = message.content
+        with open(filepath, 'a', encoding='utf-8') as file:
+            file.write(f"{timestamp} | {sender}: {content}\n")
+
+
+
+@bot.command(name = "prune")
+async def delete_messages(ctx, amount ="none"):
+    if ctx.author.guild_permissions.administrator:
+        if amount == "none":
+            await ctx.send("Please specify the amount of messages to delete")
+        elif amount.isdigit():
+            await ctx.channel.purge(limit=int(amount))
+            await ctx.send(f"Deleted {amount} messages", delete_after=5)
+        elif amount == "all":
+            await ctx.channel.purge(limit=None)
+            await ctx.send("Deleted all messages", delete_after=5)
+        else:
+            await ctx.send("Please enter a valid number")
+    else:
+        await ctx.send("You don't have the permission to use this command")
+
+
+
+@bot.command(name  = "start")
+#@commands.has_permissions(administrator=True)
+async def start(ctx):
+    if ctx.guild is None:
+        await ctx.send("This command can only be used in the Ease Exhibit server")
+        return
+    role = ctx.guild.get_role(1207733658237009920)
+    if not role in ctx.author.roles:
+        await ctx.send("You don't have the permission to use this command",delete_after=5)
+        return
+    await ctx.channel.purge(limit=1)
+    ticketchannel = bot.get_channel(1212442019302215700)
+    await ticketchannel.purge()
+    await ticketchannel.send(
+        embed = discord.Embed(
+            description = "press the button to create a new ticket!"
+        ),
+        view = CreateButton()
+    )
+    teamchannel = bot.get_channel(1212798572886757436)
+    await teamchannel.purge()
+    await teamchannel.send(
+        embed=discord.Embed(
+            description="click the button to create a new team!"
+        ),
+        view = CreateTeamButton()
+    )
+    verifychannel=bot.get_channel(1212094690514698331)
+    await verifychannel.purge()
+    await verifychannel.send(
+        embed = discord.Embed(
+            description="click the button below to start the verification process!"
+        ),
+        view = verifyButton()
+    )
+
+
+async def finduser(user_id):
+    guild = bot.get_guild(1203342217519964170)
+    # Attempt to fetch the member using guild.get_member()
+    member = guild.get_member(user_id)
+    if member:
+        return member  # Return the member object if found
+    else:
+        return None  # Return None if the user is not found
+
+
+
+@bot.command(name = "restart")
+async def close_bot(ctx):
+    required_role_id = 1207733658237009920
+    required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
+    if required_role in ctx.author.roles:
+        await ctx.send("Closing the bot...")
+        await bot.close()
+    else:
+        await ctx.send("You don't have the permission to use this command")   
+
+
+
+
+bot.run(os.getenv('DISCORD_TOKEN'))
+# bot.run('MTIxNjAzODI0NTM5ODQ3ODk5OA.GDLO5b.4F4xuLh224JcJ6oOrk9Q3RslJF4QOSfy54gD78')
