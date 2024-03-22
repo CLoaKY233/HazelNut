@@ -188,63 +188,18 @@ class CreateTeamButton(View):
     @button(label="Create Team", style=discord.ButtonStyle.secondary, custom_id="team_create_button", emoji="🦁")
 
     async def team(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.defer(ephemeral=True)
-        category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id=1214133586232475708)
-        for ch in category.text_channels:
-            if ch.topic == f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!":
-                await interaction.followup.send("You already are a part of a Team => {0}".format(ch.mention), ephemeral=True)
-                return
-
-        r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
-        overwrites = {
-            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            r1: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
-            interaction.user: discord.PermissionOverwrite(read_messages = True, send_messages=True),
-            interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        channel = await category.create_text_channel(
-            name=f"{interaction.user.name}'s team",
-            topic=f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
-            overwrites=overwrites
-        )
-        
-        await teamdata(f"{interaction.user.name}")
-        
-        
-        role = interaction.guild.get_role(1214133687181123624)
-        await interaction.user.add_roles(role)
-
-        await channel.send(
-            embed=discord.Embed(
-                title="Team Created!",
-                description=f"The Team was created by {interaction.user.mention}",
-                color = discord.Color.greyple()
-            ),
-            view = InviteToTeamButton()
-            #view = CloseButton() -> link to invite more member's button!!!
-        )
-        await interaction.followup.send(
-            embed= discord.Embed(
-                description = "Created your Team in {0}".format(channel.mention),
-                color = discord.Color.blurple()
-            ),
-            ephemeral=True
-        )
+        teammodal = Teammodal()
+        await interaction.response.send_modal(teammodal) 
 class InviteToTeamButton(View):
     def __init__(self):
         super().__init__(timeout=None)
         
     @button(label="Invite a Member!", style=discord.ButtonStyle.green, custom_id="invite_to_team", emoji="🦅")   
     async def invite(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.defer(ephemeral=True)
-        await interaction.user.send(
-                embed=discord.Embed(
-                title="Invite a Member!",
-                description=f"To invite a member, Please enter the name of the member you want to invite",
-                color = discord.Color.dark_green()
-                ).set_thumbnail(url = bot.user.avatar.url)
-            )
         guild = bot.get_guild(1203342217519964170)
+        invitemodal = Invitemodal()
+        await interaction.response.send_modal(invitemodal)
+
 
 
 
@@ -280,8 +235,74 @@ class verifymodal(ui.Modal,title = "Verification"):
                         description="You will be verified once you enter the correct otp!",
                         color=discord.Color.red()
                         ),ephemeral=True)
-class invitemodal(ui.Modal,title = "Invite"):
-    pass
+class Invitemodal(ui.Modal,title = "Invite"):
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Add a Member",
+                          style = discord.TextStyle.long,
+                          placeholder="Enter the user-id of the member you want to invite!",
+                          #default = "Not Provided",
+                          required=True,
+                          min_length=17,
+                          max_length=18)
+    async def on_submit(self, interaction: discord.Interaction):
+        member_id = int(self.answer.value)
+        member = await finduser(member_id)
+        if not member:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Invalid!",
+                    description="The user you entered was not found in the server.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+        verifiedrole = interaction.guild.get_role(1212090229444583464)
+        unverifiedrole = interaction.guild.get_role(1220440238812299345)
+        if (verifiedrole not in member.roles) or (unverifiedrole in member.roles) :
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Verification Error",
+                    description="The user you want to add is not a Verified VITian",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+        role = interaction.guild.get_role(1216328643014299709)
+        if role in member.roles:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="User already in a team!",
+                    description="The user you entered is already in a team.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+        await interaction.response.send_message(
+            embed=discord.Embed(
+                title="User added",
+                description=f"{member.mention} has been added to your team.",
+                color=discord.Color.green()
+            ),
+            ephemeral=True
+        )
+        await member.add_roles(role)
+        channel = interaction.channel
+        await channel.set_permissions(member, read_messages=True, send_messages=True)
+        await channel.send(f"{member.mention} joined the team on ||*{datetime.datetime.now()}*||")
+        await member.send(
+            embed=discord.Embed(
+                title="Team Joined!",
+                description=f"You have been added to a team in {interaction.guild.name}.",
+                color=discord.Color.green()
+            )
+        )
+        
+
+
+
 class Ticketmodal(ui.Modal,title = "Ticket"):
     guild = bot.get_guild(1203342217519964170)
     answer = ui.TextInput(label="Create Ticket!",
@@ -328,8 +349,58 @@ class Ticketmodal(ui.Modal,title = "Ticket"):
             ),
             ephemeral=True
         )
-        
-           
+class Teammodal(ui.Modal,title = "Team!"):
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Create Team!",
+                          style = discord.TextStyle.short,
+                          placeholder="What would you like to name your team?",
+                          #default = "Not Provided",
+                          required=True,
+                          min_length=3,
+                          max_length=15)
+
+
+    async def on_submit(self, interaction: discord.Interaction):
+        Teamname = self.answer.value
+        #interaction.response.send_message("you requested to create a ticket! with the reason : {0}".format(reason),ephemeral=True)
+        category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id=1214133586232475708)
+        for ch in category.text_channels:
+            if ch.topic == f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!":
+                await interaction.response.send_message("You already are a part of a Team => {0}".format(ch.mention), ephemeral=True)
+                return
+
+        r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            r1: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
+            interaction.user: discord.PermissionOverwrite(read_messages = True, send_messages=True),
+            interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        channel = await category.create_text_channel(
+            name=f"{Teamname}",
+            topic=f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
+            overwrites=overwrites
+        )
+        rolelead = interaction.guild.get_role(1214133687181123624)
+        await interaction.user.add_roles(rolelead)
+        roleteam = interaction.guild.get_role(1216328643014299709)
+        await interaction.user.add_roles(roleteam)
+        await channel.send(
+            embed=discord.Embed(
+                title=f"{Teamname}",
+                description=f"The Team was created by {interaction.user.mention}\nInvite a Member\n• They must be in the server!\n• They must be verified!\n• They must not be in a team!",
+                color = discord.Color.greyple()
+            ),
+            view = InviteToTeamButton()
+            #view = CloseButton() -> link to invite more member's button!!!
+        )
+        await interaction.response.send_message(
+            embed= discord.Embed(
+                description = "Created your Team ".format(channel.mention),
+                color = discord.Color.blurple()
+            ),
+            ephemeral=True
+        )           
     
 
 
@@ -424,6 +495,15 @@ async def start(ctx):
         view = verifyButton()
     )
 
+
+async def finduser(user_id):
+    guild = bot.get_guild(1203342217519964170)
+    # Attempt to fetch the member using guild.get_member()
+    member = guild.get_member(user_id)
+    if member:
+        return member  # Return the member object if found
+    else:
+        return None  # Return None if the user is not found
 
 
 
