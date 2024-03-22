@@ -8,7 +8,7 @@ import datetime
 from discord import Color as c
 import csv
 from discord import *
-
+import io
 
 bot = commands.Bot(
     command_prefix="?",
@@ -149,10 +149,16 @@ class CloseButton(View):
     @button(label="Close the ticket",style=discord.ButtonStyle.red,custom_id="closeticket",emoji="🔒")
     async def close(self, interaction: discord.Interaction, button: Button):
         await interaction.response.defer(ephemeral=True)
-
-        await interaction.channel.send("Closing this ticket in 3 seconds!")
-
-        await asyncio.sleep(3)
+        ticketcategory = discord.utils.get(interaction.guild.categories, id=1213021742780514336)
+        if interaction.channel.category != ticketcategory:
+            await interaction.channel.send(
+                embed = Embed(
+                title="Error",
+                description="This is not a ticket channel!",
+                color=discord.Color.red()
+            ))
+            return
+        await interaction.channel.send("Closing this ticket",delete_after=5)
 
         category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id = 1214909385600671745)
         r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
@@ -164,7 +170,7 @@ class CloseButton(View):
         await interaction.channel.edit(category=category, overwrites=overwrites)
         await interaction.channel.send(
             embed= discord.Embed(
-                description="Ticket Closed!",
+                description="--------------Ticket Closed!--------------",
                 color = discord.Color.red()
             ),
             view = TrashButton()
@@ -414,40 +420,36 @@ class Teammodal(ui.Modal,title = "Team!"):
     
 
 
-async def teamdata(teamlead:str):
-    directory = os.path.join(os.getcwd(), "Data", "Teams")
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    files = os.listdir(directory)
-    file_count = sum(1 for file in files if os.path.isfile(os.path.join(directory, file)))
-    filename = f"{file_count + 1}.csv"
-    
-    filepath = os.path.join(directory, filename)
-
-    # Write to the CSV file
-    with open(filepath, mode='a', newline='') as file:
-        writer = csv.writer(file, delimiter=',')
-        writer.writerow([f'{teamlead}', 'members'])  # Example data
-
-
 
 async def log(channel: discord.TextChannel):
-    directory = os.path.join(os.getcwd(), "Data", "Logs")
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    filename = f"log_{channel.id}.txt"
-    filepath = os.path.join(directory, filename)
-
-    # Check if the log file already exists
-    if os.path.exists(filepath):
-        return  # Exit the function if the log file already exists
-
+    logs = ""
+    counter = 0
     async for message in channel.history(limit=None, oldest_first=True):
         timestamp = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
         sender = message.author.name
         content = message.content
-        with open(filepath, 'a', encoding='utf-8') as file:
-            file.write(f"{timestamp} | {sender}: {content}\n")
+        logs += f"{timestamp} | {sender}: {content}\n"
+
+    # Create an in-memory buffer to store the logs
+    log_buffer = io.BytesIO(logs.encode('utf-8'))
+    log_buffer.seek(0)
+    
+  # Create the embed object
+    embed = discord.Embed(
+        title=f"Log for #{channel.name}",
+        description=f"Log: {channel.id}",
+        timestamp=message.created_at  # Use the latest message's timestamp
+  )
+    # Get the log upload channel
+    guild = channel.guild
+    log_upload_channel = discord.utils.get(guild.channels, id=1220744583491620965)
+    
+    async for messages in log_upload_channel.history(limit = None):
+        counter+=1
+    # Upload the logs as a .txt file
+    messagelog = await log_upload_channel.send( file=discord.File(log_buffer, filename=f"LOG {counter+1} {channel.name}.txt"))
+    
+
 
 
 
@@ -466,6 +468,8 @@ async def delete_messages(ctx, amount ="none"):
             await ctx.send("Please enter a valid number")
     else:
         await ctx.send("You don't have the permission to use this command")
+
+
 
 
 
