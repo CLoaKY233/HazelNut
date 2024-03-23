@@ -5,7 +5,6 @@ from discord.ui import Button,button,View
 import chat_exporter
 import os
 import datetime
-from discord import Color as c
 import csv
 from discord import *
 import io

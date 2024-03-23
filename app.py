@@ -2,10 +2,14 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import datetime
 import discord
 import requests
-
+from flask import Flask, jsonify, request
+from honeybadger.contrib import FlaskHoneybadger
 
 app = Flask(__name__)
-
+app.config['HONEYBADGER_ENVIRONMENT'] = 'production'
+app.config['HONEYBADGER_API_KEY'] = 'hbp_bPMjA3OT6qrb1UjaIToBu1Ld4MNLNT2hrL3w'
+app.config['HONEYBADGER_PARAMS_FILTERS'] = 'password, secret, credit-card'
+FlaskHoneybadger(app, report_exceptions=True)
 app.static_folder = 'assets'
 app.secret_key = 'your_secret_key_here'  # Change this to a secure secret key
 
