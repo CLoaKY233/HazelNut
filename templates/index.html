@@ -1,115 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-bs-theme="light" lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Discord Announcement Tool</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide&amp;display=swap">
+    <link rel="stylesheet" href="assets/css/animate.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            animation: fadeInAnimation ease 1s;
-            animation-iteration-count: 1;
-            animation-fill-mode: forwards;
-        }
-
-        .container {
-            margin-top: 50px;
-            padding: 30px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            animation: slideInAnimation ease 1s;
-            animation-iteration-count: 1;
-            animation-fill-mode: forwards;
-        }
-
-        .form-group label {
-            font-weight: bold;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-            transform: scale(1.05);
-        }
-
-        @keyframes fadeInAnimation {
-            0% {
-                opacity: 0;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideInAnimation {
-            0% {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-    </style>
 </head>
 
-<body>
-    <div class="container">
-        <h2 class="mb-4">Discord Announcement Tool</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">
-            {{ message }}
+<body style="color: var(--bs-emphasis-color);font-size: 16px;background: linear-gradient(black, rgb(0,0,0) 78%, rgb(22,76,88));">
+    <nav class="navbar navbar-expand bg-dark d-flex flex-grow-1 flex-shrink-1 flex-fill justify-content-around align-items-stretch align-content-stretch align-self-stretch flex-wrap mt-auto py-3" data-bs-theme="dark" style="margin: 0px;--bs-body-bg: #000000;background: linear-gradient(black 45%, rgb(22,76,88) 67%, #000000 88%);border-radius: 5px;border-top-width: 8px;border-top-color: var(--bs-body-color);">
+        <div class="container-fluid"><a class="navbar-brand d-flex align-items-center" href="#" style="color: rgb(0,0,0);"><span style="font-family: Audiowide, serif;text-align: justify;font-size: 24px;color: var(--bs-emphasis-color);">EaseEx</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-5"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navcol-5">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"></li>
+                </ul><a class="btn btn-primary ms-md-2" role="button" data-bss-hover-animate="pulse" href="#" style="background: rgb(0,0,0);border-radius: 16px;position: relative;display: block;overflow: visible;padding: 5px 14px;height: 36.2px;width: 138.6px;transform: rotate(0deg) scale(1) skew(0deg);transform-style: preserve-3d;opacity: 1;border-width: 1px;border-color: rgba(255,255,255,0.41);">Login/Register</a>
+            </div>
         </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
+    </nav>
+    <div class="container" style="color: rgb(255,255,255);margin-top: 28px;margin-bottom: 48px;padding-bottom: 26px;">
+        <h2 data-bss-hover-animate="flash" class="mb-4" style="text-align: center;padding: 60;">Discord Announcement Tool</h2>
         <form method="POST">
-            <div class="form-group">
-                <label for="title">Title:</label>
-                <input type="text" class="form-control" id="title" name="title"
-                    placeholder="Enter the title of the announcement" required>
-            </div>
-            <div class="form-group">
-                <label for="description">Description:</label>
-                <textarea class="form-control" id="description" name="description" rows="3"
-                    placeholder="Enter the description for your announcement" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="footer_text">Announcer Name (Optional):</label>
-                <input type="text" class="form-control" id="footer_text" name="footer_text"
-                    placeholder="Enter Name of the Announcer (Optional)">
-            </div>
-            <div class="form-group">
-                <label for="department">Department:</label>
-                <input type="text" class="form-control" id="department" name="department"
-                    placeholder="Enter the department name or abbreviation" required>
-            </div>
-            <div class="form-group">
-                <label for="priority">Priority:</label>
-                <select class="form-control" id="priority" name="priority" required>
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="title" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Title:</label><input class="form-control form-control" type="text" id="title" name="title" placeholder="Enter the title of the announcement" required="" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);"></div>
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="description" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Description:</label><textarea class="form-control form-control" id="description" name="description" placeholder="Enter the description for your announcement" required="" rows="3" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);"></textarea></div>
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="footer_text" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Announcer Name (Optional):</label><input class="form-control form-control" type="text" id="footer_text" name="footer_text" placeholder="Enter Name of the Announcer (Optional)" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);"></div>
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="department" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Department:</label><input class="form-control form-control" type="text" id="department" name="department" placeholder="Enter the department name or abbreviation" required="" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);"></div>
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="priority" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Priority:</label><select class="form-select form-control" id="priority" name="priority" required="" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);">
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Send Announcement</button>
+                </select></div><span> {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {% for category, message in messages %} </span>
+            <div class="alert alert-{{ category }}" role="alert"><span> {{ message }} </span></div><span> {% endfor %} {% endif %} {% endwith %} </span><button class="btn btn-primary d-flex flex-row m-auto justify-content-lg-center visible" type="submit" style="background: rgb(0,0,0);border-radius: 14px;">Send Announcement</button>
         </form>
     </div>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/bs-init.js"></script>
 </body>
 
 </html>
