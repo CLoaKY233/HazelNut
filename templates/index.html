@@ -5,12 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Discord Announcement Tool</title>
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide&amp;display=swap">
-    <link rel="stylesheet" href="assets/css/animate.min.css">
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animate.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
+
+
 
 <body style="color: var(--bs-emphasis-color);font-size: 16px;background: linear-gradient(black, rgb(0,0,0) 78%, rgb(22,76,88));">
     <nav class="navbar navbar-expand bg-dark d-flex flex-grow-1 flex-shrink-1 flex-fill justify-content-around align-items-stretch align-content-stretch align-self-stretch flex-wrap mt-auto py-3" data-bs-theme="dark" style="margin: 0px;--bs-body-bg: #000000;background: linear-gradient(black 45%, rgb(22,76,88) 67%, #000000 88%);border-radius: 5px;border-top-width: 8px;border-top-color: var(--bs-body-color);">
@@ -39,8 +41,8 @@
             <div class="alert alert-{{ category }}" role="alert"><span> {{ message }} </span></div><span> {% endfor %} {% endif %} {% endwith %} </span><button class="btn btn-primary d-flex flex-row m-auto justify-content-lg-center visible" type="submit" style="background: rgb(0,0,0);border-radius: 14px;">Send Announcement</button>
         </form>
     </div>
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="assets/js/bs-init.js"></script>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bs-init.js') }}"></script>
 </body>
 
 </html>

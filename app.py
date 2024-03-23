@@ -3,7 +3,10 @@ from datetime import datetime
 import discord
 import requests
 
+
 app = Flask(__name__)
+
+app.static_folder = 'assets'
 app.secret_key = 'your_secret_key_here'  # Change this to a secure secret key
 
 # Replace with your actual Discord webhook URL (keep it private)
