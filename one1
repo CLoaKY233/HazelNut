@@ -514,8 +514,7 @@ async def start(ctx):
     if ctx.guild is None:
         await ctx.send("This command can only be used in the Ease Exhibit server")
         return
-    role = ctx.guild.get_role(1221538414847856700)
-    
+    role = ctx.guild.get_role(1221538414847856700)    
     if not role in ctx.author.roles:
         await ctx.send("You don't have the permission to use this command",delete_after=5)
         return
