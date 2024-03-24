@@ -135,41 +135,6 @@ class verifyButton(View):
         otp = send_otp(interaction.user.nick)
         o.write(interaction.user.nick,otp)
 
-class verifymodal(ui.Modal, title="Verification"):
-
-
-    guild = bot.get_guild(1203342217519964170)
-    answer = ui.TextInput(label="Enter the OTP",
-                          style=discord.TextStyle.short,
-                          placeholder="Enter the OTP we sent you through Mail!",
-                          # default = "___",
-                          required=True,
-                          min_length=8,
-                          max_length=8)
-
-    async def on_submit(self, interaction: discord.Interaction):
-        otp = o.show(interaction.user.nick)
-        if self.answer.value==str(otp):  # Check against the OTP you sent
-            unverified = interaction.guild.get_role(1220440238812299345)
-            role = interaction.guild.get_role(1212090229444583464)
-            await interaction.user.add_roles(role)
-            await interaction.response.send_message(embed=discord.Embed(
-                title="Congratulations!",
-                description="You have been verified and given the 'Verified' role.",
-                color=discord.Color.gold()
-            ), ephemeral=True)
-            await asyncio.sleep(10)
-            await interaction.user.remove_roles(unverified)
-            newnick = Name(interaction.user.nick) + " " + interaction.user.nick
-            await interaction.user.edit(nick=newnick)
-        else:
-            await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Incorrect OTP! Please try again!",
-                    description="You will be verified once you enter the correct otp!",
-                    color=discord.Color.red()
-                ), ephemeral=True)
-        
 class CreateButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -264,6 +229,43 @@ class NicknameButton(View):
 
 
 
+class verifymodal(ui.Modal, title="Verification"):
+
+
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Enter the OTP",
+                          style=discord.TextStyle.short,
+                          placeholder="Enter the OTP we sent you through Mail!",
+                          # default = "___",
+                          required=True,
+                          min_length=8,
+                          max_length=8)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        otp = o.show(interaction.user.nick)
+        if self.answer.value==str(otp):  # Check against the OTP you sent
+            unverified = interaction.guild.get_role(1220440238812299345)
+            role = interaction.guild.get_role(1212090229444583464)
+            await interaction.user.add_roles(role)
+            newnick = Name(interaction.user.nick) + " " + interaction.user.nick
+            await interaction.user.edit(nick=newnick)
+            await interaction.response.send_message(embed=discord.Embed(
+                title="Congratulations!",
+                description="You have been verified and given the 'Verified' role.",
+                color=discord.Color.gold()
+            ), ephemeral=True)
+            await asyncio.sleep(10)
+            await interaction.user.remove_roles(unverified)
+            
+            
+        else:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Incorrect OTP! Please try again!",
+                    description="You will be verified once you enter the correct otp!",
+                    color=discord.Color.red()
+                ), ephemeral=True)
+        
 class Renamemodal(ui.Modal,title = "Rename"):
     guild = bot.get_guild(1203342217519964170)
     answer = ui.TextInput(label="Enter your Registeration number!",
