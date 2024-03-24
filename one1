@@ -247,8 +247,6 @@ class verifymodal(ui.Modal, title="Verification"):
             unverified = interaction.guild.get_role(1220440238812299345)
             role = interaction.guild.get_role(1212090229444583464)
             await interaction.user.add_roles(role)
-            newnick = Name(interaction.user.nick) + " " + interaction.user.nick
-            await interaction.user.edit(nick=newnick)
             await interaction.response.send_message(embed=discord.Embed(
                 title="Congratulations!",
                 description="You have been verified and given the 'Verified' role.",
@@ -256,6 +254,8 @@ class verifymodal(ui.Modal, title="Verification"):
             ), ephemeral=True)
             await asyncio.sleep(10)
             await interaction.user.remove_roles(unverified)
+            newnick = Name(interaction.user.nick) + " " + interaction.user.nick
+            await interaction.user.edit(nick=newnick)
             
             
         else:
@@ -537,7 +537,7 @@ async def start(ctx):
         ),
         view = CreateTeamButton()
     )
-    nickchannel = bot.get_channel(1221462772756381716)
+    nickchannel = bot.get_channel(1212094690514698331)
     await nickchannel.purge()
     await nickchannel.send(
         embed=discord.Embed(
@@ -546,7 +546,7 @@ async def start(ctx):
         view = NicknameButton()
     )
     verifychannel=bot.get_channel(1212094690514698331)
-    await verifychannel.purge()        
+       
     await verifychannel.send(
         embed = discord.Embed(description=f"Click the button below to start the verification process!\n  • Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • Please use the Rename Button in {nickchannel.mention} to Nickname Yourselves!\n  • PS : Give the Devs a coffee Treat!"
         ),
