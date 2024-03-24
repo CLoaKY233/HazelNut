@@ -8,6 +8,8 @@ import datetime
 import csv
 from discord import *
 import io
+from gmail import send_otp,Name
+import otp as o
 
 bot = commands.Bot(
     command_prefix="?",
@@ -108,7 +110,7 @@ async def on_ready():
     bot.add_view(CreateTeamButton())
     bot.add_view(verifyButton())
     bot.add_view(InviteToTeamButton())
-
+    bot.add_view(NicknameButton())
 
 
 
@@ -119,19 +121,55 @@ class verifyButton(View):
 
     @button(label="Verify ✅", style=discord.ButtonStyle.success, custom_id="verify")
     async def verify(self, interaction: discord.Interaction, button: Button):
-        #await interaction.response.defer(ephemeral=True)
+        # await interaction.response.defer(ephemeral=True)
         role = interaction.guild.get_role(1212090229444583464)
         if role in interaction.user.roles:
-            await interaction.response.send_message(embed = discord.Embed(
-                        title="You are already verified!",
-                        description="You have already been verified and have the 'Verified' role.",
-                        color=discord.Color.red()
-                        ),ephemeral=True
-                    )
+            await interaction.response.send_message(embed=discord.Embed(
+                title="You are already verified!",
+                description="You have already been verified and have the 'Verified' role.",
+                color=discord.Color.red()
+            ), ephemeral=True)
             return
-        # Create and show the verification modal
-        verification_modal = verifymodal()  # Assuming you have the verifymodal class defined
-        await interaction.response.send_modal(verification_modal)  
+        verification_modal = verifymodal()  # Pass name1 and otp1
+        await interaction.response.send_modal(verification_modal)
+        otp = send_otp(interaction.user.nick)
+        o.write(interaction.user.nick,otp)
+
+class verifymodal(ui.Modal, title="Verification"):
+
+
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Enter the OTP",
+                          style=discord.TextStyle.short,
+                          placeholder="Enter the OTP we sent you through Mail!",
+                          # default = "___",
+                          required=True,
+                          min_length=8,
+                          max_length=8)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        otp = o.show(interaction.user.nick)
+        if self.answer.value==str(otp):  # Check against the OTP you sent
+            unverified = interaction.guild.get_role(1220440238812299345)
+            role = interaction.guild.get_role(1212090229444583464)
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message(embed=discord.Embed(
+                title="Congratulations!",
+                description="You have been verified and given the 'Verified' role.",
+                color=discord.Color.gold()
+            ), ephemeral=True)
+            await asyncio.sleep(10)
+            await interaction.user.remove_roles(unverified)
+            newnick = Name(interaction.user.nick) + " " + interaction.user.nick
+            await interaction.user.edit(nick=newnick)
+        else:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Incorrect OTP! Please try again!",
+                    description="You will be verified once you enter the correct otp!",
+                    color=discord.Color.red()
+                ), ephemeral=True)
+        
 class CreateButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -214,42 +252,39 @@ class InviteToTeamButton(View):
         guild = bot.get_guild(1203342217519964170)
         invitemodal = Invitemodal()
         await interaction.response.send_modal(invitemodal)
+class NicknameButton(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @button(label="Rename", style=discord.ButtonStyle.primary, custom_id="rename", emoji="✏️")   
+    async def invite(self, interaction: discord.Interaction, button: Button):
+        guild = bot.get_guild(1203342217519964170)
+        renamemodal = Renamemodal()
+        await interaction.response.send_modal(renamemodal)
 
 
 
-
-
-class verifymodal(ui.Modal,title = "Verification"):
+class Renamemodal(ui.Modal,title = "Rename"):
     guild = bot.get_guild(1203342217519964170)
-    answer = ui.TextInput(label="Enter the OTP",
+    answer = ui.TextInput(label="Enter your Registeration number!",
                           style = discord.TextStyle.short,
-                          placeholder="Enter the OTP we sent you through Mail!",
+                          placeholder="Registeration Number",
                           #default = "___",
                           required=True,
-                          min_length=3,
-                          max_length=3)
-
+                          min_length=10,
+                          max_length=10)
+    
     async def on_submit(self, interaction: discord.Interaction):
-        otp = self.answer.value
-        if otp == "123": # Replace "123" with your actual verification code
-            unverified = interaction.guild.get_role(1220440238812299345)
-            role = interaction.guild.get_role(1212090229444583464)
-            await interaction.user.add_roles(role)
-            await interaction.response.send_message(embed = discord.Embed(
-                        title="Congratulations!",
-                        description="You have been verified and given the 'Verified' role.",
+        nickname = self.answer.value
+        await interaction.user.edit(nick=nickname.upper())
+        await interaction.response.send_message(embed = discord.Embed(
+                        title="Nicknamed!",
+                        description="You have been nicknamed to your entered Registeration Number",
                         color=discord.Color.gold()
                         ),ephemeral=True
                     )
-            await asyncio.sleep(10)
-            await interaction.user.remove_roles(unverified)
-        else:
-            await interaction.response.send_message(
-                        embed = discord.Embed(
-                        title="Incorrect OTP! Please try again!",
-                        description="You will be verified once you enter the correct otp!",
-                        color=discord.Color.red()
-                        ),ephemeral=True)
+        
+
 class Invitemodal(ui.Modal,title = "Invite"):
     guild = bot.get_guild(1203342217519964170)
     answer = ui.TextInput(label="Add a Member",
@@ -345,8 +380,9 @@ class Ticketmodal(ui.Modal,title = "Ticket"):
             interaction.user: discord.PermissionOverwrite(read_messages = True, send_messages=True),
             interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
         }
+        chname = interaction.user.nick.split()
         channel = await category.create_text_channel(
-            name=str(interaction.user),
+            name=(f"{chname[-1]}-Ticket"),
             topic=f"{interaction.user.id} DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
             overwrites=overwrites
         )
@@ -499,14 +535,22 @@ async def start(ctx):
         ),
         view = CreateTeamButton()
     )
-    verifychannel=bot.get_channel(1212094690514698331)
-    await verifychannel.purge()
-    await verifychannel.send(
-        embed = discord.Embed(
-            description="click the button below to start the verification process!"
+    nickchannel = bot.get_channel(1221462772756381716)
+    await nickchannel.purge()
+    await nickchannel.send(
+        embed=discord.Embed(
+            description="Click the button Rename yourselves!\n  • Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • PS : Give the Devs a coffee Treat!"
         ),
-        view = verifyButton()
+        view = NicknameButton()
     )
+    verifychannel=bot.get_channel(1212094690514698331)
+    await verifychannel.purge()        
+    await verifychannel.send(
+        embed = discord.Embed(description=f"Click the button below to start the verification process!\n  • Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • Please use the Rename Button in {nickchannel.mention} to Nickname Yourselves!\n  • PS : Give the Devs a coffee Treat!"
+        ),
+        view = verifyButton(),
+    )
+   
 
 
 async def finduser(user_id):
