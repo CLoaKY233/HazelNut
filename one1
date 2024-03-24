@@ -567,7 +567,7 @@ async def finduser(user_id):
 
 @bot.command(name = "restart")
 async def close_bot(ctx):
-    required_role_id = 1207733658237009920
+    required_role_id = 1221538414847856700
     required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
     if required_role in ctx.author.roles:
         await ctx.send("Closing the bot...")
