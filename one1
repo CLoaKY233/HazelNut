@@ -99,8 +99,8 @@ async def on_ready():
     except AttributeError:  
         hello.set_thumbnail(url="https://wallpaper.dog/large/10964102.jpg")
     hello.add_field(
-        name="What can One/1 do!",
-        value=f"{bot.user.display_name} will handle this exhibition with precision and care!",
+        name="What can Watchdog do!",
+        value=f"{bot.user.display_name} can help you create tickets, teams, verify yourself and much more!",
         inline=False,
     )
     await channel.send(embed=hello)
@@ -110,7 +110,7 @@ async def on_ready():
     bot.add_view(CreateTeamButton())
     bot.add_view(verifyButton())
     bot.add_view(InviteToTeamButton())
-    bot.add_view(NicknameButton())
+    # bot.add_view(NicknameButton())
 
 
 
@@ -118,7 +118,15 @@ async def on_ready():
 class verifyButton(View):
     def __init__(self):
         super().__init__(timeout=None)
-
+        
+        
+    @button(label="Rename", style=discord.ButtonStyle.primary, custom_id="rename", emoji="✏️")   
+    async def invite(self, interaction: discord.Interaction, button: Button):
+        guild = bot.get_guild(1203342217519964170)
+        renamemodal = Renamemodal()
+        await interaction.response.send_modal(renamemodal)
+        
+            
     @button(label="Verify ✅", style=discord.ButtonStyle.success, custom_id="verify")
     async def verify(self, interaction: discord.Interaction, button: Button):
         # await interaction.response.defer(ephemeral=True)
@@ -134,7 +142,7 @@ class verifyButton(View):
         await interaction.response.send_modal(verification_modal)
         otp = send_otp(interaction.user.nick)
         o.write(interaction.user.nick,otp)
-
+    
 class CreateButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -215,17 +223,33 @@ class InviteToTeamButton(View):
     @button(label="Invite a Member!", style=discord.ButtonStyle.green, custom_id="invite_to_team", emoji="🦅")   
     async def invite(self, interaction: discord.Interaction, button: Button):
         guild = bot.get_guild(1203342217519964170)
+        channel = interaction.channel
+        role = guild.get_role(1216328643014299709)
+        counter = 0 
+        for member in channel.members:
+            if role in member.roles:
+                counter+=1
+        if counter >=5:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Team Full!",
+                    description="You can't invite more members to this team as it is already full.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
         invitemodal = Invitemodal()
         await interaction.response.send_modal(invitemodal)
-class NicknameButton(View):
-    def __init__(self):
-        super().__init__(timeout=None)
+# class NicknameButton(View):
+#     def __init__(self):
+#         super().__init__(timeout=None)
     
-    @button(label="Rename", style=discord.ButtonStyle.primary, custom_id="rename", emoji="✏️")   
-    async def invite(self, interaction: discord.Interaction, button: Button):
-        guild = bot.get_guild(1203342217519964170)
-        renamemodal = Renamemodal()
-        await interaction.response.send_modal(renamemodal)
+#     @button(label="Rename", style=discord.ButtonStyle.primary, custom_id="rename", emoji="✏️")   
+#     async def invite(self, interaction: discord.Interaction, button: Button):
+#         guild = bot.get_guild(1203342217519964170)
+#         renamemodal = Renamemodal()
+#         await interaction.response.send_modal(renamemodal)
 
 
 
@@ -297,6 +321,23 @@ class Invitemodal(ui.Modal,title = "Invite"):
                           min_length=17,
                           max_length=18)
     async def on_submit(self, interaction: discord.Interaction):
+        guild = bot.get_guild(1203342217519964170)
+        channel = interaction.channel
+        role = guild.get_role(1216328643014299709)
+        counter = 0 
+        for member in channel.members:
+            if role in member.roles:
+                counter+=1
+        if counter >=5:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Team Full!",
+                    description="You can't invite more members to this team as it is already full.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return        
         member_id = int(self.answer.value)
         member = await finduser(member_id)
         if not member:
@@ -537,24 +578,23 @@ async def start(ctx):
         ),
         view = CreateTeamButton()
     )
-    nickchannel = bot.get_channel(1212094690514698331)
-    await nickchannel.purge()
-    await nickchannel.send(
-        embed=discord.Embed(
-            title = "Click the button Rename yourselves!",
-            description="• Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • PS : Give the Devs a coffee Treat!"
-        ),
-        view = NicknameButton()
-    )
+    # await nickchannel.purge()
+    # await nickchannel.send(
+    #     embed=discord.Embed(
+    #         title = "Click the button Rename yourselves!",
+    #         description="• Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • PS : Give the Devs a coffee Treat!"
+    #     ),
+    #     view = NicknameButton()
+    # )
     verifychannel=bot.get_channel(1212094690514698331)
-       
+    await verifychannel.purge()
     await verifychannel.send(
         
         embed = discord.Embed(
             title = "Click the button below to start the verification process!",
-            description=f"• Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • Please use the Rename Button in {nickchannel.mention} to Nickname Yourselves!\n  • PS : Give the Devs a coffee Treat!"
+            description=f"• Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • Please use the Rename Button to Nickname Yourselves!\n  • PS : Give the Devs a coffee Treat!"
         ),
-        view = verifyButton(),
+        view = verifyButton()
     )
    
 
