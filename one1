@@ -549,8 +549,10 @@ async def start(ctx):
     verifychannel=bot.get_channel(1212094690514698331)
        
     await verifychannel.send(
-        title = "Click the button below to start the verification process!",
-        embed = discord.Embed(description=f"• Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • Please use the Rename Button in {nickchannel.mention} to Nickname Yourselves!\n  • PS : Give the Devs a coffee Treat!"
+        
+        embed = discord.Embed(
+            title = "Click the button below to start the verification process!",
+            description=f"• Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • Please use the Rename Button in {nickchannel.mention} to Nickname Yourselves!\n  • PS : Give the Devs a coffee Treat!"
         ),
         view = verifyButton(),
     )
