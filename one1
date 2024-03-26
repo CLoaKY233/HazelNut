@@ -280,11 +280,17 @@ class memberleavemodal(ui.Modal,title = "Leave Team"):
         teamname = self.answer.value
         channel = interaction.channel
         role = interaction.guild.get_role(1216328643014299709) 
+        
+        # overwrite = channel.overwrites_for(interaction.user)
+        # overwrite.update( read_messages=False, send_messages=False)
+        # await channel.set_permissions(interaction.user, overwrite=overwrite)
+        
         overwrites = channel.overwrites
         if interaction.user in overwrites: 
             del overwrites[interaction.user]
             await channel.edit(overwrites=overwrites)
         await interaction.user.remove_roles(role)
+        await interaction.response.defer(ephemeral=True)
         await interaction.user.send(
             embed=discord.Embed(
                 title="Team Left!",
@@ -343,7 +349,7 @@ class leadleavemodal(ui.Modal,title = "Leave Team"):
                 )
             )
         del memberlist
-        return
+
         
          
 
@@ -374,8 +380,7 @@ class verifymodal(ui.Modal, title="Verification"):
             await interaction.user.remove_roles(unverified)
             newnick = Name(interaction.user.nick) + " " + interaction.user.nick
             await interaction.user.edit(nick=newnick)
-            
-            
+
         else:
             await interaction.response.send_message(
                 embed=discord.Embed(
