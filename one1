@@ -241,17 +241,111 @@ class InviteToTeamButton(View):
             return
         invitemodal = Invitemodal()
         await interaction.response.send_modal(invitemodal)
-# class NicknameButton(View):
-#     def __init__(self):
-#         super().__init__(timeout=None)
+      
     
-#     @button(label="Rename", style=discord.ButtonStyle.primary, custom_id="rename", emoji="✏️")   
-#     async def invite(self, interaction: discord.Interaction, button: Button):
-#         guild = bot.get_guild(1203342217519964170)
-#         renamemodal = Renamemodal()
-#         await interaction.response.send_modal(renamemodal)
-
-
+    @button(label = "leave team", style = discord.ButtonStyle.red,custom_id="leave_team",emoji = "🏴‍☠️")
+    async def leave(self, interaction: discord.Interaction, button: Button):
+        guild = bot.get_guild(1203342217519964170)
+        channel1 = interaction.channel
+        teamlead = guild.get_role(1214133687181123624)
+        teammember = guild.get_role(1216328643014299709)
+        if teamlead in interaction.user.roles and teammember in interaction.user.roles:
+            await interaction.response.send_modal(leadleavemodal()) 
+        elif teammember in interaction.user.roles:
+            await interaction.response.send_modal(memberleavemodal())
+  
+        
+    
+        
+class memberleavemodal(ui.Modal,title = "Leave Team"):
+    guild = bot.get_guild(1203342217519964170)
+    answer = ui.TextInput(label="Are you sure you want to Leave this Team?",
+                          style=discord.TextStyle.short,
+                          placeholder="Please enter the team name to confirm! (discord channel name)",
+                          # default = "___",
+                          required=True,
+                          min_length=3,
+                          max_length=15)
+    async def on_submit(self, interaction: discord.Interaction):
+        if self.answer.value != interaction.channel.name:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Incorrect Team Name!",
+                    description="The team name you entered does not match the team name.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+        teamname = self.answer.value
+        channel = interaction.channel
+        role = interaction.guild.get_role(1216328643014299709) 
+        overwrites = channel.overwrites
+        if interaction.user in overwrites: 
+            del overwrites[interaction.user]
+            await channel.edit(overwrites=overwrites)
+        await interaction.user.remove_roles(role)
+        await interaction.response.send_message(
+            embed=discord.Embed(
+                title="Team Left!",
+                description=f"{interaction.user.mention} has left the team {teamname}.",
+                color=discord.Color.green()
+            ),
+            ephemeral=False
+        )
+        await interaction.user.send(
+            embed=discord.Embed(
+                title="Team Left!",
+                description=f"You have left the team {teamname}.",
+                color=discord.Color.green()
+            )
+        )  
+        return 
+class leadleavemodal(ui.Modal,title = "Leave Team"):
+    
+    answer = ui.TextInput(label="Warning! Team will be deleted once you leave",
+                          style=discord.TextStyle.short,
+                          placeholder="Please enter the team name to confirm! (discord channel name)",
+                          # default = "___",
+                          required=True,
+                          min_length=3,
+                          max_length=15)
+    async def on_submit(self, interaction: discord.Interaction):
+        if self.answer.value != interaction.channel.name:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Incorrect Team Name!",
+                    description="The team name you entered does not match the team name.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return   
+        teamname = self.answer.value
+        channel = interaction.channel
+        guild = bot.get_guild(1203342217519964170)
+        teamlead = guild.get_role(1214133687181123624)
+        teammember = guild.get_role(1216328643014299709)
+        await interaction.user.remove_roles(teamlead)
+        print(1)
+        memberlist = []
+        for member in channel.members:
+            if teammember in member.roles:
+                memberlist.append(member)
+        await channel.delete()
+        for member in memberlist:
+            await member.remove_roles(teammember)
+            await member.send(
+                embed=discord.Embed(
+                    title="Team deleted!",
+                    description=f"Your team : {channel.name} has been deleted\nthe leader {interaction.user.nick} left the team",
+                    color=discord.Color.red()
+                )
+            )
+        del memberlist
+        return
+        
+         
 
 class verifymodal(ui.Modal, title="Verification"):
 
@@ -460,7 +554,7 @@ class Teammodal(ui.Modal,title = "Team!"):
         category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id=1214133586232475708)
         for ch in category.text_channels:
             if ch.topic == f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!":
-                await interaction.response.send_message("You already are a part of a Team => {0}".format(ch.mention), ephemeral=True)
+                await interaction.response.send_message(f"You already are a part of a Team => {ch.mention}", ephemeral=True)
                 return
 
         r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
@@ -479,6 +573,13 @@ class Teammodal(ui.Modal,title = "Team!"):
         await interaction.user.add_roles(rolelead)
         roleteam = interaction.guild.get_role(1216328643014299709)
         await interaction.user.add_roles(roleteam)
+        await interaction.response.send_message(
+            embed= discord.Embed(
+                title="team created",
+                description = f"Created your Team {channel.mention}",
+                color = discord.Color.blurple()
+            ),ephemeral=True
+        )   
         await channel.send(
             embed=discord.Embed(
                 title=f"{Teamname}",
@@ -488,15 +589,7 @@ class Teammodal(ui.Modal,title = "Team!"):
             view = InviteToTeamButton()
             #view = CloseButton() -> link to invite more member's button!!!
         )
-        await interaction.response.send_message(
-            embed= discord.Embed(
-                description = "Created your Team ".format(channel.mention),
-                color = discord.Color.blurple()
-            ),
-            ephemeral=True
-        )           
-    
-
+        
 
 
 async def log(channel: discord.TextChannel):
