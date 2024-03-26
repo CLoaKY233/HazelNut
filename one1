@@ -333,7 +333,7 @@ class leadleavemodal(ui.Modal,title = "Leave Team"):
         teamlead = guild.get_role(1214133687181123624)
         teammember = guild.get_role(1216328643014299709)
         await interaction.user.remove_roles(teamlead)
-        print(1)
+        await interaction.response.defer(ephemeral=True)
         memberlist = []
         for member in channel.members:
             if teammember in member.roles:
