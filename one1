@@ -285,13 +285,12 @@ class memberleavemodal(ui.Modal,title = "Leave Team"):
             del overwrites[interaction.user]
             await channel.edit(overwrites=overwrites)
         await interaction.user.remove_roles(role)
-        await interaction.response.send_message(
+        await channel.send(
             embed=discord.Embed(
-                title="Team Left!",
-                description=f"{interaction.user.mention} has left the team {teamname}.",
+                title="[-]  Team Left!",
+                description=f"{interaction.user.mention} has left the team.",
                 color=discord.Color.green()
-            ),
-            ephemeral=False
+            )
         )
         await interaction.user.send(
             embed=discord.Embed(
@@ -478,7 +477,13 @@ class Invitemodal(ui.Modal,title = "Invite"):
         await member.add_roles(role)
         channel = interaction.channel
         await channel.set_permissions(member, read_messages=True, send_messages=True)
-        await channel.send(f"Welcome!\n{member.mention} joined the team! ")
+        await channel.send(
+            embed=discord.Embed(
+                title="[+]  Team Joined!",
+                description=f"{member.mention} has joined the team.",
+                color=discord.Color.green()
+            )
+        )
         await member.send(
             embed=discord.Embed(
                 title="Team Joined!",
