@@ -1,2 +1,2 @@
-worker: python one1
+worker: python WATCHDOG.py
 web: gunicorn app:app
