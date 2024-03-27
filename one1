@@ -530,7 +530,7 @@ class Ticketmodal(ui.Modal,title = "Ticket"):
         }
         chname = interaction.user.nick.split()
         channel = await category.create_text_channel(
-            name=(f"{chname[-1]}-Ticket"),
+            name=(f"🐧{chname[-1]}-Ticket"),
             topic=f"{interaction.user.id} DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
             overwrites=overwrites
         )
