@@ -571,7 +571,7 @@ class Teammodal(ui.Modal,title = "Team!"):
         r1 : discord.Role = interaction.guild.get_role(1216053106064887980)
         overwrites = {
             interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            r1: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
+            r1: discord.PermissionOverwrite(read_messages=False, send_messages=False, manage_messages=False),
             interaction.user: discord.PermissionOverwrite(read_messages = True, send_messages=True),
             interaction.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True)
         }
