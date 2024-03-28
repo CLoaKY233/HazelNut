@@ -131,6 +131,20 @@ class verifyButton(View):
     async def verify(self, interaction: discord.Interaction, button: Button):
         # await interaction.response.defer(ephemeral=True)
         role = interaction.guild.get_role(1212090229444583464)
+        for member in role.members:
+            name1 = (member.nick).split() 
+            if interaction.user.nick == name1[2]:
+                await interaction.response.send_message(
+                embed=discord.Embed(
+                title="Multiple accounts detected!",
+                description="You have already been verified on another account, please log in using that account!",
+                color=discord.Color.red()
+                ), ephemeral=True
+                )
+                del name1
+                return
+            
+            
         if role in interaction.user.roles:
             await interaction.response.send_message(embed=discord.Embed(
                 title="You are already verified!",
@@ -380,6 +394,7 @@ class verifymodal(ui.Modal, title="Verification"):
             await interaction.user.remove_roles(unverified)
             newnick = Name(interaction.user.nick) + " " + interaction.user.nick
             await interaction.user.edit(nick=newnick)
+            
 
         else:
             await interaction.response.send_message(
