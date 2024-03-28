@@ -429,11 +429,11 @@ class Invitemodal(ui.Modal,title = "Invite"):
     guild = bot.get_guild(1203342217519964170)
     answer = ui.TextInput(label="Add a Member",
                           style = discord.TextStyle.long,
-                          placeholder="Enter the user-id of the member you want to invite!",
+                          placeholder="Enter the registeration number of the member you want to invite!",
                           #default = "Not Provided",
                           required=True,
-                          min_length=17,
-                          max_length=18)
+                          min_length=10,
+                          max_length=10)
     async def on_submit(self, interaction: discord.Interaction):
         guild = bot.get_guild(1203342217519964170)
         channel = interaction.channel
@@ -452,9 +452,9 @@ class Invitemodal(ui.Modal,title = "Invite"):
                 ephemeral=True
             )
             return        
-        member_id = int(self.answer.value)
-        member = await finduser(member_id)
-        if not member:
+        member_regno = (self.answer.value)
+        member = await finduser(member_regno)
+        if member == None:
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title="Invalid!",
@@ -466,16 +466,16 @@ class Invitemodal(ui.Modal,title = "Invite"):
             return
         verifiedrole = interaction.guild.get_role(1212090229444583464)
         unverifiedrole = interaction.guild.get_role(1220440238812299345)
-        if (verifiedrole not in member.roles) or (unverifiedrole in member.roles) :
-            await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Verification Error",
-                    description="The user you want to add is not a Verified VITian",
-                    color=discord.Color.red()
-                ),
-                ephemeral=True
-            )
-            return
+        # if (verifiedrole not in member.roles) or (unverifiedrole in member.roles) :
+        #     await interaction.response.send_message(
+        #         embed=discord.Embed(
+        #             title="Verification Error",
+        #             description="The user you want to add is not a Verified VITian",
+        #             color=discord.Color.red()
+        #         ),
+        #         ephemeral=True
+        #     )
+        #     return
         role = interaction.guild.get_role(1216328643014299709)
         if role in member.roles:
             await interaction.response.send_message(
@@ -718,15 +718,17 @@ async def start(ctx):
    
 
 
-async def finduser(user_id):
+async def finduser(regno):
     guild = bot.get_guild(1203342217519964170)
-    # Attempt to fetch the member using guild.get_member()
-    member = guild.get_member(user_id)
-    if member:
-        return member  # Return the member object if found
-    else:
-        return None  # Return None if the user is not found
-
+    verifiedrole = guild.get_role(1212090229444583464)
+    requser=None
+    for member in verifiedrole.members:
+        name1 = (member.nick).split()
+        if name1[2] == regno:
+            requser=member
+            break
+ # Return None if the user is not found
+    return requser
 
 
 @bot.command(name = "restart")
