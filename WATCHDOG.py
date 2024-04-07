@@ -10,7 +10,6 @@ from discord import *
 import io
 from gmail import send_otp,Name
 import otp as o
-
 bot = commands.Bot(
     command_prefix="?",
     intents = discord.Intents.all(),
@@ -371,7 +370,7 @@ class verifymodal(ui.Modal, title="Verification"):
 
 
     guild = bot.get_guild(1203342217519964170)
-    answer = ui.TextInput(label="Enter the OTP",
+    answer = ui.TextInput(label="DO NOT CLOSE THIS WINDOW",
                           style=discord.TextStyle.short,
                           placeholder="Enter the OTP we sent you through Mail!",
                           # default = "___",
@@ -729,6 +728,48 @@ async def finduser(regno):
             break
  # Return None if the user is not found
     return requser
+
+
+@bot.command(name = "exportdata")
+async def maketeamlist(ctx):
+    
+    required_role_id = 1221538414847856700
+    required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
+    if required_role not in ctx.author.roles:
+        return
+    teamlist = []
+    teammemberrole = discord.utils.get(ctx.guild.roles, id=1216328643014299709)
+    category = discord.utils.get(ctx.guild.categories, id=1214133586232475708)
+    teamnumber= 0
+    
+    for channel in category.channels:
+        teamnumber += 1
+        channelmemberlist = []
+        channelmemberlist.append(teamnumber)
+        
+        channelmemberlist.append(channel.name)
+        for member in channel.members:
+            if teammemberrole in member.roles:
+                newname = member.nick.split()
+                channelmemberlist.append(newname[-1])
+        teamlist.append(channelmemberlist)
+        
+    csv_file = io.StringIO()
+    csv_writer = csv.writer(csv_file)
+
+    # Write the data to the CSV file
+    for words_list in teamlist:
+        csv_writer.writerow(words_list)
+
+    # Reset the file pointer to the beginning
+    csv_file.seek(0)
+
+    # Upload the CSV file to a Discord channel
+    channel = discord.utils.get(ctx.guild.channels, id=1226460657684316190)  # Replace YOUR_CHANNEL_ID with the actual channel ID
+    if channel:
+        await channel.send(file=discord.File(csv_file, filename='teamlist.csv'))
+        
+
 
 
 @bot.command(name = "restart")
