@@ -9,6 +9,7 @@ import otp as o
 
 
 
+
 def Name(reg_no):
     workbook = openpyxl.load_workbook('data.xlsx')
     sheet = workbook.active
