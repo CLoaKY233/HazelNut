@@ -10,6 +10,9 @@ from discord import *
 import io
 from gmail import send_otp,Name
 import otp as o
+
+
+
 bot = commands.Bot(
     command_prefix="?",
     intents = discord.Intents.all(),
@@ -132,7 +135,7 @@ class verifyButton(View):
         role = interaction.guild.get_role(1212090229444583464)
         for member in role.members:
             name1 = (member.nick).split() 
-            if interaction.user.nick == name1[2]:
+            if interaction.user.nick == name1[-1]:
                 await interaction.response.send_message(
                 embed=discord.Embed(
                 title="Multiple accounts detected!",
@@ -578,7 +581,7 @@ class Teammodal(ui.Modal,title = "Team!"):
         #interaction.response.send_message("you requested to create a ticket! with the reason : {0}".format(reason),ephemeral=True)
         category: discord.CategoryChannel = discord.utils.get(interaction.guild.categories, id=1214133586232475708)
         for ch in category.text_channels:
-            if ch.topic == f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!":
+            if ch.topic == f"{interaction.user.id}":
                 await interaction.response.send_message(f"You already are a part of a Team => {ch.mention}", ephemeral=True)
                 return
 
@@ -591,7 +594,7 @@ class Teammodal(ui.Modal,title = "Team!"):
         }
         channel = await category.create_text_channel(
             name=f"{Teamname}",
-            topic=f"{interaction.user.id}'s team, DO NOT CHANGE THE TOPIC OF THIS CHANNEL!",
+            topic=f"{interaction.user.id}",
             overwrites=overwrites
         )
         rolelead = interaction.guild.get_role(1214133687181123624)
