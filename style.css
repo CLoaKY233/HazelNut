@@ -1,0 +1,140 @@
+/* General styles */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh; /* Ensure body takes up at least the full viewport height */
+    display: flex; /* Use flexbox layout */
+}
+
+main {
+    display: flex;
+    flex: 1; /* Allow main content to take up remaining space */
+}
+
+.side-panel {
+    width: 200px;
+    padding: 20px;
+    background-color: #f0f0f0;
+    flex: 0 0 auto; /* Don't allow side panel to grow */
+    height: 100%; /* Expand side panel to full height */
+    overflow-y: auto; /* Add scrollbar if content overflows */
+}
+
+.side-panel ul {
+    list-style: none;
+    padding: 0;
+}
+.side-panel li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+}
+
+.side-panel li.active {
+    background-color: #e0e0e0;
+}
+.menu-icon {
+    margin-right: 10px; /* Add spacing between icon and text */
+}
+.side-panel.collapsed {
+    width: 50px;
+    padding: 10px;
+    overflow: hidden;
+  }
+.side-panel.collapsed li {
+    font-size: 0;
+}
+.side-panel.collapsed .menu-icon {
+    font-size: 1.5rem; /* Set font size for icons */
+}
+
+
+
+.main-content {
+    flex: 1; /* Allow main content to take up remaining space */
+    padding: 20px;
+}
+
+.content {
+    display: none;
+}
+
+.content.active {
+    display: block;
+}
+
+/* Hamburger icon styling */
+.toggle-icon {
+    font-size: 1.5rem; /* Adjust icon size as needed */
+    cursor: pointer;
+    margin-bottom: 10px; /* Add some spacing below the icon */
+}
+
+.toggle-icon:hover {
+    color: #007bff; /* Change color on hover if desired */
+}
+
+/* Form styles */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+label {
+    font-weight: bold;
+}
+
+textarea {
+    resize: vertical;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[type="submit"] {
+    align-self: flex-end;
+}
+
+select {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+#toggleSidePanel {
+    text-align: center; /* Center align the content */
+    width: 100%; /* Ensure the button takes up the full width */
+}
+
+/* Responsive styles */
+@media only screen and (max-width: 768px) {
+    main {
+        flex-direction: column; /* Stack main content vertically */
+    }
+
+    .side-panel {
+        width: 100%;
+        max-width: none;
+    }
+
+    .main-content {
+        width: 100%;
+        max-width: none;
+        padding: 20px 10px;
+    }
+
+    .content {
+        padding: 10px;
+    }
+
+    form {
+        max-width: 100%;
+    }
+}
