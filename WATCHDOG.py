@@ -779,34 +779,54 @@ async def start(ctx):
     await ticketchannel.purge()
     await ticketchannel.send(
         embed = discord.Embed(
-            description = "press the button to create a new ticket!"
-        ),
+                title="Ticket Creation",
+                description=(
+                    "Welcome to our support system! You can create a new ticket by pressing the button below."
+                    "\n\n**Please Note**: This is the preferred method for requesting support. "
+                    "Our team will assist you as soon as possible."
+                ),
+                color=discord.Color.blurple()
+                ).set_thumbnail(url="https://www.kindpng.com/picc/m/4-41705_support-the-developer-hd-png-download.png")
+                .add_field(name="Need Help?", value="If you encounter any issues or have questions, feel free to reach out to us."),
         view = CreateButton()
     )
     teamchannel = bot.get_channel(1212798572886757436)
     await teamchannel.purge()
     await teamchannel.send(
         embed=discord.Embed(
-            description="click the button to create a new team!"
-        ),
-        view = CreateTeamButton()
+            title="Team Management",
+            description=(
+                "To get started with team management, follow the steps below:\n\n"
+                "1. **Create a New Team**:\n"
+                "   Use the <Create Team Button> below to create a new team.\n\n"
+                "2. **Join an Existing Team**:\n"
+                "   Use the <Join Team Button> below to join an existing team.\n\n"
+                "**Please Note**:\n"
+                "- To join a team, you must have an invitation from the respective team leader.\n"
+                "- You can not join multiple teams simultaneously.\n"
+                "- Check your email to see if you have received an invitation.\n"
+            ),
+            color=discord.Color.blurple())
+            .set_thumbnail(url = "https://tryinch.com/wp-content/uploads/2021/11/team-management_2.jpg"),
+            view = CreateTeamButton()
     )
-    # await nickchannel.purge()
-    # await nickchannel.send(
-    #     embed=discord.Embed(
-    #         title = "Click the button Rename yourselves!",
-    #         description="• Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • PS : Give the Devs a coffee Treat!"
-    #     ),
-    #     view = NicknameButton()
-    # )
+
     verifychannel=bot.get_channel(1212094690514698331)
     await verifychannel.purge()
     await verifychannel.send(
         
         embed = discord.Embed(
-            title = "Click the button below to start the verification process!",
-            description=f"• Please make sure your nickname is set to your VIT Registeration Number before verifying!\n  • Please use the Rename Button to Nickname Yourselves!\n  • PS : Give the Devs a coffee Treat!"
-        ),
+            title="Start Verification Process",
+            description=(
+                "Click the button below to begin the verification process.\n\n"
+                "**Verification Instructions:**\n"
+                "• Ensure your nickname is set to your VIT Registration Number before verifying.\n"
+                "• Use the Rename Button to set your nickname.\n\n"
+                "Thank you for your cooperation!"
+            ),
+            color=discord.Color.green()  # Adjust color to match the theme
+        ).set_thumbnail(url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlRyVgpE3fM5dPUvhgEi8GZw-UyprX6juXLO8ThHO4DQ&s")
+        .set_author(name="WATCHDOG"),
         view = verifyButton()
     )
    
