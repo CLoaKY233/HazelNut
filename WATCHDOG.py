@@ -8,7 +8,7 @@ import datetime
 import csv
 from discord import *
 import io
-from gmail import send_otp,Name
+from gmail import *
 import otp as o
 
 
@@ -168,6 +168,7 @@ class CreateButton(View):
         #await interaction.response.defer(ephemeral=True)
         ticketmodal = Ticketmodal()
         await interaction.response.send_modal(ticketmodal)
+    
 class CloseButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -202,6 +203,7 @@ class CloseButton(View):
             view = TrashButton()
         )
         await log(interaction.channel)  
+        
 class TrashButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -232,6 +234,31 @@ class CreateTeamButton(View):
             return
         teammodal = Teammodal()
         await interaction.response.send_modal(teammodal) 
+    
+    @button(label = "Join Team",style = discord.ButtonStyle.green,custom_id="team_join_button",emoji = "🐯")
+    async def jointheteam(self, interaction:discord.Interaction,button:Button):
+        memberrole= interaction.guild.get_role(1216328643014299709)
+        verifiedrole = interaction.guild.get_role(1212090229444583464)
+        if verifiedrole not in interaction.user.roles:
+            await interaction.response.send_message(embed = discord.Embed(
+                        title="Verification Error",
+                        description="You are not a Verified VITian",
+                        color=discord.Color.red()
+                        ),ephemeral=True
+                    )
+            return
+        if memberrole in interaction.user.roles:
+            await interaction.response.send_message(embed = discord.Embed(
+                        title="You are already in a team!",
+                        description="You are already in a team.",
+                        color=discord.Color.red()
+                        ),ephemeral=True
+                    )
+            return
+        joinmodal = teamjoinmodal()
+        await interaction.response.send_modal(joinmodal)
+        
+    
 class InviteToTeamButton(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -439,6 +466,8 @@ class Invitemodal(ui.Modal,title = "Invite"):
     async def on_submit(self, interaction: discord.Interaction):
         guild = bot.get_guild(1203342217519964170)
         channel = interaction.channel
+        
+        
         role = guild.get_role(1216328643014299709)
         counter = 0 
         for member in channel.members:
@@ -453,68 +482,45 @@ class Invitemodal(ui.Modal,title = "Invite"):
                 ),
                 ephemeral=True
             )
-            return        
-        member_regno = (self.answer.value)
-        member = await finduser(member_regno)
+            return
+        
+        member = await finduser(self.answer.value)   
         if member == None:
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title="Invalid!",
-                    description="The user you entered was not found in the server.",
+                    description="The user you want to invite is either unverified or not in the server yet!.",
                     color=discord.Color.red()
                 ),
                 ephemeral=True
             )
             return
-        verifiedrole = interaction.guild.get_role(1212090229444583464)
-        unverifiedrole = interaction.guild.get_role(1220440238812299345)
-        # if (verifiedrole not in member.roles) or (unverifiedrole in member.roles) :
-        #     await interaction.response.send_message(
-        #         embed=discord.Embed(
-        #             title="Verification Error",
-        #             description="The user you want to add is not a Verified VITian",
-        #             color=discord.Color.red()
-        #         ),
-        #         ephemeral=True
-        #     )
-        #     return
-        role = interaction.guild.get_role(1216328643014299709)
-        if role in member.roles:
+        memberrole = interaction.guild.get_role(1216328643014299709)   
+        if memberrole in member.roles:
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title="User already in a team!",
-                    description="The user you entered is already in a team.",
+                    description="The user you want to invite is already in a team.",
                     color=discord.Color.red()
                 ),
                 ephemeral=True
             )
             return
-        await interaction.response.send_message(
-            embed=discord.Embed(
-                title="User added",
-                description=f"{member.mention} has been added to your team.",
-                color=discord.Color.green()
-            ),
-            ephemeral=True
-        )
-        await member.add_roles(role)
-        channel = interaction.channel
-        await channel.set_permissions(member, read_messages=True, send_messages=True)
-        await channel.send(
-            embed=discord.Embed(
-                title="[+]  Team Joined!",
-                description=f"{member.mention} has joined the team.",
-                color=discord.Color.green()
+        if member is not None:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title=f"{member.nick} has been invited!",
+                    description=f"An invitation mail has been sent to the {member.nick} to join the team!\nThis invite will expire tonight",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
             )
-        )
-        await member.send(
-            embed=discord.Embed(
-                title="Team Joined!",
-                description=f"You have been added to a team in {interaction.guild.name}.",
-                color=discord.Color.green()
-            )
-        )
-        
+            interaction.response.defer
+            inviter=(interaction.user.nick).split()
+            invitecode = send_invite(self.answer.value,channel.name,inviter[-1])
+            
+            o.writeinvite(member.nick,invitecode,inviter[-1],interaction.channel.id)
+            
 
 
 
@@ -618,7 +624,93 @@ class Teammodal(ui.Modal,title = "Team!"):
             #view = CloseButton() -> link to invite more member's button!!!
         )
         
+class teamjoinmodal(ui.Modal,title = "Join Team"):
+    guild = bot.get_guild(1203342217519964170)
+    answer1 = ui.TextInput(label="Join Team",
+                          style = discord.TextStyle.short,
+                          placeholder="Inviter's registeration number here",
+                          #default = "Not Provided",
+                          required=True,
+                          min_length=10,
+                          max_length=10)
+    answer2 = ui.TextInput(label="Validate invite",
+                            style = discord.TextStyle.short,
+                            placeholder="Team-code here",
+                            required = True,
+                            min_length = 8,
+                            max_length = 8)
+    async def on_submit(self, interaction: discord.Interaction):
+        inviter = self.answer1.value
+        teamcode = self.answer2.value
+        otp,Name,channelid = None,None,None
+        otp,name,channelid = o.verifyinvite(interaction.user.nick)
+        Team = bot.get_channel(channelid)
+        if Team == None:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                title="Validation failed",
+                description=f"Invitation is Invalid!",
+                color=discord.Color.red() 
+                ),ephemeral=True
+            )
+            return
+        
+        guild = bot.get_guild(1203342217519964170)
+        memberrole = guild.get_role(1216328643014299709)
+        counter = 0 
+        for member in Team.members:
+            if memberrole in member.roles:
+                counter+=1
+        if counter >=5:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Team Full!",
+                    description="You can't invite more members to this team as it is already full.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+        
+        #check if team exists
+        #check if team limit
+        #check if verified
+        #check if invite valid
+        if (otp == teamcode) and (inviter == name):
+            await interaction.user.add_roles(memberrole)
+            channel = Team
+            o.delete(interaction.user.nick)
+            
+            await channel.set_permissions(interaction.user, read_messages=True, send_messages=True)
+            await channel.send(
+                embed=discord.Embed(
+                    title="[+]  Team Joined!",
+                    description=f"{interaction.user.mention} has joined the team.",
+                    color=discord.Color.green()
+                )
+            )
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Team Joined!",
+                    description=f"You have been added to {Team.mention}",
+                    color=discord.Color.green()
+                ),ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+            embed=discord.Embed(
+                title="Validation failed",
+                description=f"Please re-enter the correct credentials as recieved in the mail!",
+                color=discord.Color.red()
+            ),
+            ephemeral=True
+            )
+            return
+        
+        
 
+    
+    
 
 async def log(channel: discord.TextChannel):
     logs = ""
