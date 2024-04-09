@@ -10,6 +10,7 @@ from discord import *
 import io
 from gmail import *
 import otp as o
+import writer
 
 
 
@@ -561,7 +562,7 @@ class Ticketmodal(ui.Modal,title = "Ticket"):
                 title="Ticket Created!",
                 description=f"Don't ping a staff member, they will be here soon.\n\n-----------------\n{interaction.user.mention}'s ticket",
                 color=discord.Color.green()).set_thumbnail(url=bot.user.avatar.url).set_author(name="BumbleBee", url=bot.user.avatar.url)
-                .add_field(name="Issue", value=reason, inline=False),
+                .add_field(name="Issue", value=reason, inline=True),
                 view = CloseButton()
                 )
         await interaction.response.send_message(
@@ -857,42 +858,27 @@ async def finduser(regno):
 
 @bot.command(name = "exportdata")
 async def maketeamlist(ctx):
-    
-    required_role_id = 1221538414847856700
-    required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
+    required_role = discord.utils.get(ctx.guild.roles, id=1221538414847856700)
     if required_role not in ctx.author.roles:
+        print(o)
         return
-    teamlist = []
-    teammemberrole = discord.utils.get(ctx.guild.roles, id=1216328643014299709)
     category = discord.utils.get(ctx.guild.categories, id=1214133586232475708)
-    teamnumber= 0
-    
+    teammemberrole = discord.utils.get(ctx.guild.roles, id=1216328643014299709)   
+    n = 0
+    channel_counter = 0
     for channel in category.channels:
-        teamnumber += 1
-        channelmemberlist = []
-        channelmemberlist.append(teamnumber)
+        channel_counter+=1
+        teamlist = [] 
+        member_counter = 0
+        teamname = channel.name
         
-        channelmemberlist.append(channel.name)
         for member in channel.members:
             if teammemberrole in member.roles:
-                newname = member.nick.split()
-                channelmemberlist.append(newname[-1])
-        teamlist.append(channelmemberlist)
-        
-    csv_file = io.StringIO()
-    csv_writer = csv.writer(csv_file)
-
-    # Write the data to the CSV file
-    for words_list in teamlist:
-        csv_writer.writerow(words_list)
-
-    # Reset the file pointer to the beginning
-    csv_file.seek(0)
-
-    # Upload the CSV file to a Discord channel
-    channel = discord.utils.get(ctx.guild.channels, id=1226460657684316190)  # Replace YOUR_CHANNEL_ID with the actual channel ID
-    if channel:
-        await channel.send(file=discord.File(csv_file, filename='teamlist.csv'))
+                member_counter+=1
+                reg = member.nick.split()
+                teamlist.append(reg[-1])
+        n= writer.write(n,member_counter,channel_counter,teamname,teamlist)        
+                
         
 
 
