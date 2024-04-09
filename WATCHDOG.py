@@ -616,10 +616,20 @@ class Teammodal(ui.Modal,title = "Team!"):
         )   
         await channel.send(
             embed=discord.Embed(
-                title=f"{Teamname}",
-                description=f"The Team was created by {interaction.user.mention}\nInvite a Member\n• They must be in the server!\n• They must be verified!\n• They must not be in a team!",
-                color = discord.Color.greyple()
-            ),
+                    title=f"{Teamname}",
+                    description=(
+                        f"**Team Creator:** {interaction.user.mention}\n\n"
+                        "🚀 **Welcome to the Team!** 🚀\n"
+                        "Congratulations on creating your team! Now it's time to invite members.\n\n"
+                        "**Invite a Member:**\n"
+                        "To invite a member to your team, follow these steps:\n"
+                        "1. **Check Requirements:** Ensure they are in the server, verified, and not in a team.\n"
+                        "2. **Use the Invite Link:** Share the team's invite code with them using the button below!.\n"
+                        "3. **Confirm Membership:** Once they join, they'll be added to your team.\n\n"
+                        
+                    ),
+                    color=discord.Color.greyple()
+                ).set_thumbnail(url="https://s3-ap-south-1.amazonaws.com/static.awfis.com/wp-content/uploads/2017/07/07184649/ProjectManagement.jpg"),
             view = InviteToTeamButton()
             #view = CloseButton() -> link to invite more member's button!!!
         )
