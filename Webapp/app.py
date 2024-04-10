@@ -86,9 +86,16 @@ def generate_embed(title, description, priority, department, color=None, thumbna
 def heroku_webhook():
     """Handle incoming webhook from Heroku."""
     data = request.json
-    # Process Heroku webhook data and generate Discord announcement
-    title = "Heroku Update"
-    description = f"Received Heroku webhook:\n```json\n{data}\n```"
+    
+    # Extracting relevant data from the payload
+    app_name = data['data']['app']['name']
+    user_email = data['data']['user']['email']
+    status = data['data']['status']
+    created_at = data['data']['created_at']
+
+    # Generating Discord embed message
+    title = f"Heroku Build for App {app_name}"
+    description = f"Status: {status}\nUser: {user_email}\nCreated At: {created_at}"
     priority = "medium"  # You can adjust the priority as needed
     department = "Heroku"  # You can specify the department or category
     footer_text = "Heroku Webhook"  # You can customize the footer text
@@ -100,7 +107,11 @@ def heroku_webhook():
         author_name=footer_text,  # Using footer_text as author name
         author_icon="https://i.imgur.com/2lQLSjo.png",
     )
+    
+    # Sending the Discord embed message
     announce(discord_webhook_url, [embed])
+    
+    # Responding with success message
     return jsonify({"message": "Webhook received and processed successfully."}), 200
 
 if __name__ == '__main__':
