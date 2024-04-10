@@ -1,17 +1,77 @@
-from flask import Flask, request, jsonify
-import requests
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+import discord
 from datetime import datetime
+import requests
 
 app = Flask(__name__)
+app.static_folder = 'assets'
 app.secret_key = 'your_secret_key_here'  # Change this to a secure secret key
 
-# Discord webhook URL
-discord_webhook_url = "https://discord.com/api/webhooks/1227505796321902703/XcwCOZMFZC9q2LTZnxV9bdzgccA3_wDJhKxcXYbdb2epgh2GQyOjzeYgMIUuwCoi0MOi"
+# Replace with your actual Discord webhook URL (keep it private)
+discord_webhook_url = "https://discord.com/api/webhooks/1220432858506596514/jSPYUE9hgfMlpWNaIusHvVqO6uFWPhnDJHfNSCuEwdPqS-nyFtRgnKQvJK-PUed61Zps"
 
-def announce_to_discord(embed):
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        title = request.form['title']
+        description = request.form['description']
+        priority = request.form['priority']
+        department = request.form['department']
+        footer_text = request.form['footer_text']
+
+        embed = generate_embed(
+            title,
+            description,
+            priority,
+            department,
+            author_name=footer_text,  # Using footer_text as author name
+            author_icon="https://i.imgur.com/2lQLSjo.png",
+        )
+
+        announce(discord_webhook_url, [embed])
+        flash('Announcement sent successfully!', 'success')
+        return redirect(url_for('index'))
+
+    return render_template('index.html')
+
+@app.route('/heroku/webhook', methods=['POST'])
+def heroku_webhook():
+    """Handle incoming webhook from Heroku."""
+    data = request.json
+    
+    # Extracting relevant data from the payload
+    app_name = data.get('data', {}).get('app', {}).get('name', 'Unknown')
+    status = data.get('data', {}).get('status', 'Unknown')
+    created_at = data.get('data', {}).get('created_at', 'Unknown')
+    
+    # User email might not always be available
+    user_email = data.get('data', {}).get('user', {}).get('email', 'Unknown')
+    
+    # Generating Discord embed message
+    title = f"Heroku Build for App {app_name}"
+    description = f"Status: {status}\nUser: {user_email}\nCreated At: {created_at}"
+    priority = "medium"  # You can adjust the priority as needed
+    department = "Heroku"  # You can specify the department or category
+    footer_text = "Heroku Webhook"  # You can customize the footer text
+    embed = generate_embed(
+        title,
+        description,
+        priority,
+        department,
+        author_name=footer_text,  # Using footer_text as author name
+        author_icon="https://i.imgur.com/2lQLSjo.png",
+    )
+    
+    # Sending the Discord embed message
+    announce(discord_webhook_url, [embed])
+
+    return jsonify({"message": "Success"})  # Return a response to indicate success
+
+def announce(url, embeds):
     """Send announcement message to Discord webhook."""
-    data = {"embeds": [embed]}
-    response = requests.post(discord_webhook_url, json=data)
+    data = {"embeds": embeds}
+    response = requests.post(url, json=data)
+
     if response.status_code == 204:
         print("Webhook message sent successfully.")
     else:
@@ -22,21 +82,27 @@ def generate_embed(title, description, priority, department, color=None, thumbna
     current_datetime = datetime.utcnow()
     date_str = current_datetime.strftime("%Y-%m-%d")
 
-    footer_content = f"Announcer: {author_name}" if author_name else None
-    if footer_text:
-        footer_content = f"{footer_content} | {footer_text}" if footer_content else footer_text
-    if department:
-        footer_content = f"{footer_content} | Department: {department}" if footer_content else f"Department: {department}"
+    footer_content = f"Announcer: {author_name}"  # Default footer content
 
-    color_mapping = {"low": 3066993, "medium": 15105570, "high": 15158332}
-    color = color_mapping.get(priority, color)
+    if footer_text:
+        footer_content += f" | {footer_text}"
+    if department:
+        footer_content += f" | Department: {department}"
+
+    # Set color based on priority
+    if priority == "low":
+        color = 3066993  # Green
+    elif priority == "medium":
+        color = 15105570  # Orange
+    elif priority == "high":
+        color = 15158332  # Red
 
     embed = {
         "title": title,
         "description": description,
         "color": color,
         "author": {"name": author_name, "icon_url": author_icon} if author_name else None,
-        "footer": {"text": footer_content} if footer_content else None,
+        "footer": {"text": footer_content},
         "timestamp": current_datetime.isoformat(),
         "fields": [
             {"name": "Priority", "value": priority.capitalize(), "inline": True},
@@ -48,37 +114,6 @@ def generate_embed(title, description, priority, department, color=None, thumbna
         embed["thumbnail"] = {"url": thumbnail_url}
 
     return embed
-
-@app.route('/', methods=['GET'])
-def index():
-    return "Welcome to the Heroku Webhook Handler!"
-
-@app.route('/heroku/webhook/<event_type>', methods=['POST'])
-def handle_heroku_event(event_type):
-    """Handle Heroku webhook events."""
-    data = request.json
-    app_name = data.get('data', {}).get('app', {}).get('name', 'Unknown')
-    status = data.get('data', {}).get('status', 'Unknown')
-    created_at = data.get('data', {}).get('created_at', 'Unknown')
-    user_email = data.get('data', {}).get('user', {}).get('email', 'Unknown')
-
-    title = f"Heroku {event_type.capitalize()} Event for App {app_name}"
-    description = f"Status: {status}\nUser: {user_email}\nCreated At: {created_at}"
-    priority = "medium"
-    department = "Heroku"
-    footer_text = "Heroku Webhook"
-    
-    embed = generate_embed(
-        title,
-        description,
-        priority,
-        department,
-        author_name=footer_text,
-        author_icon="https://i.imgur.com/2lQLSjo.png",
-    )
-    
-    announce_to_discord(embed)
-    return jsonify({"message": f"{event_type} event processed successfully."}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
