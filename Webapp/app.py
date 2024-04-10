@@ -1,39 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-import discord
+from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import datetime
+import discord
 import requests
-import json
+from flask import Flask, jsonify, request
+
 
 app = Flask(__name__)
+
 app.static_folder = 'assets'
 app.secret_key = 'your_secret_key_here'  # Change this to a secure secret key
 
 # Replace with your actual Discord webhook URL (keep it private)
-discord_webhook_url = "https://discord.com/api/webhooks/1220432858506596514/jSPYUE9hgfMlpWNaIusHvVqO6uFWPhnDJHfNSCuEwdPqS-nyFtRgnKQvJK-PUed61Zps"
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        title = request.form['title']
-        description = request.form['description']
-        priority = request.form['priority']
-        department = request.form['department']
-        footer_text = request.form['footer_text']
-
-        embed = generate_embed(
-            title,
-            description,
-            priority,
-            department,
-            author_name=footer_text,  # Using footer_text as author name
-            author_icon="https://i.imgur.com/2lQLSjo.png",
-        )
-
-        announce(discord_webhook_url, [embed])
-        flash('Announcement sent successfully!', 'success')
-        return redirect(url_for('index'))
-
-    return render_template('index.html')
+webhook_url = "https://discord.com/api/webhooks/1220432858506596514/jSPYUE9hgfMlpWNaIusHvVqO6uFWPhnDJHfNSCuEwdPqS-nyFtRgnKQvJK-PUed61Zps"
 
 def announce(url, embeds):
     """Send announcement message to Discord webhook."""
@@ -83,32 +61,15 @@ def generate_embed(title, description, priority, department, color=None, thumbna
 
     return embed
 
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        title = request.form['title']
+        description = request.form['description']
+        priority = request.form['priority']
+        department = request.form['department']
+        footer_text = request.form['footer_text']
 
-@app.route('/heroku/webhook', methods=['POST'])
-def heroku_webhook():
-    """Handle incoming webhook from Heroku."""
-    try:
-        data = request.json
-
-        # Save the received JSON payload to a string variable
-        heroku_payload_str = json.dumps(data, indent=4)
-        print("Heroku webhook payload:")
-        print(heroku_payload_str)
-        
-        # Extracting relevant data from the payload
-        app_name = data['data'].get('app', {}).get('name', 'Unknown')
-        status = data['data'].get('status', 'Unknown')
-        created_at = data['data'].get('created_at', 'Unknown')
-        
-        # User email might not always be available
-        user_email = data['data'].get('user', {}).get('email', 'Unknown')
-        
-        # Generating Discord embed message
-        title = f"Heroku Build for App {app_name}"
-        description = f"Status: {status}\nUser: {user_email}\nCreated At: {created_at}"
-        priority = "medium"  # You can adjust the priority as needed
-        department = "Heroku"  # You can specify the department or category
-        footer_text = "Heroku Webhook"  # You can customize the footer text
         embed = generate_embed(
             title,
             description,
@@ -117,17 +78,12 @@ def heroku_webhook():
             author_name=footer_text,  # Using footer_text as author name
             author_icon="https://i.imgur.com/2lQLSjo.png",
         )
-        
-        # Sending the Discord embed message
-        announce(discord_webhook_url, [embed])
 
-        return jsonify({"message": "Webhook processed successfully."}), 200
-    except Exception as e:
-        # Log the exception for troubleshooting
-        print(f"Error processing Heroku webhook: {e}")
-        return jsonify({"error": "An error occurred while processing the webhook."}), 500
+        announce(webhook_url, [embed])
+        flash('Announcement sent successfully!', 'success')
+        return redirect(url_for('index'))
 
-
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
