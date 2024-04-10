@@ -85,16 +85,16 @@ def generate_embed(title, description, priority, department, color=None, thumbna
 @app.route('/heroku/webhook', methods=['POST'])
 def heroku_webhook():
     """Handle incoming webhook from Heroku."""
-    data = request.json
-    
     try:
+        data = request.json
+        
         # Extracting relevant data from the payload
-        app_name = data['data']['app']['name']
-        status = data['data']['status']
-        created_at = data['data']['created_at']
+        app_name = data['data'].get('app', {}).get('name', 'Unknown')
+        status = data['data'].get('status', 'Unknown')
+        created_at = data['data'].get('created_at', 'Unknown')
         
         # User email might not always be available
-        user_email = data['data']['user']['email'] if 'user' in data['data'] else 'Unknown'
+        user_email = data['data'].get('user', {}).get('email', 'Unknown')
         
         # Generating Discord embed message
         title = f"Heroku Build for App {app_name}"
@@ -113,14 +113,13 @@ def heroku_webhook():
         
         # Sending the Discord embed message
         announce(discord_webhook_url, [embed])
-        
-        # Responding with success message
-        return jsonify({"message": "Webhook received and processed successfully."}), 200
-    except KeyError as e:
-        # Handle missing keys in the webhook data
-        error_message = f"Missing key: {str(e)}"
-        print(error_message)
-        return jsonify({"error": error_message}), 400
+
+        return jsonify({"message": "Webhook processed successfully."}), 200
+    except Exception as e:
+        # Log the exception for troubleshooting
+        print(f"Error processing Heroku webhook: {e}")
+        return jsonify({"error": "An error occurred while processing the webhook."}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
