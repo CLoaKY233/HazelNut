@@ -203,7 +203,7 @@ class CloseButton(View):
             ),
             view = TrashButton()
         )
-        await log(interaction.channel)  
+         
         
 class TrashButton(View):
     def __init__(self):
@@ -212,9 +212,9 @@ class TrashButton(View):
     @button(label="Delete the ticket", style=discord.ButtonStyle.red, emoji="🚮", custom_id="trash")
     async def trash(self, interaction: discord.Interaction, button: Button):
         await interaction.response.defer()
+        await log(interaction.channel) 
         await interaction.channel.send("Deleting the ticket in 3 seconds")
         await asyncio.sleep(3)
-
         await interaction.channel.delete()    
 class CreateTeamButton(View):
     def __init__(self):
