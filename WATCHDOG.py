@@ -822,6 +822,7 @@ async def start(ctx):
             view = CreateTeamButton()
     )
 
+
     verifychannel=bot.get_channel(1212094690514698331)
     await verifychannel.purge()
     await verifychannel.send(
@@ -839,6 +840,58 @@ async def start(ctx):
         ).set_thumbnail(url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlRyVgpE3fM5dPUvhgEi8GZw-UyprX6juXLO8ThHO4DQ&s")
         .set_author(name="WATCHDOG"),
         view = verifyButton()
+    )
+    
+    
+    rules1 = bot.get_channel(1220786021399007388)
+
+    await rules1.purge()
+
+    await rules1.send(
+        embed=discord.Embed(
+            title="RULES AND REGULATIONS",
+            description=(
+                "-------------------------------------------------------------------------------------\n"
+                "1. All students registering/participating in Project Exhibition must adhere to the rules and guidelines.\n\n"
+                "2. Failure to comply with these guidelines might and will reward cancellation of your current project exhibition.\n"
+                "-------------------------------------------------------------------------------------\n\n"
+                "__\n__\n__\n__\n"
+            )
+        )
+        .add_field(
+            name="Section 1, General Rules",
+            value=(
+                "\n-------------------------------------------------------------------------------------\n"
+                "• Be respectful: Treat others with kindness and respect.\n\n"
+                "• No discrimination: Avoid any form of discrimination or hate speech.\n\n"
+                "• No spam or self-promotion: Refrain from spamming or excessive self-promotion.\n\n"
+                "• Respect privacy: Keep personal information private.\n\n"
+                "• Follow Discord's rules: Adhere to Discord's Terms of Service.\n\n"
+                "• No NSFW content: Avoid sharing explicit or inappropriate content.\n\n"
+                "• Listen to moderators: Follow instructions from moderators.\n\n"
+                "• Report violations: Report any rule violations to moderators.\n"
+                "-------------------------------------------------------------------------------------\n"
+                "__\n__\n__\n__\n"
+            ),inline=False
+        )
+        .add_field(
+            name="Section 2, Special Rules",
+            value=(
+                "-------------------------------------------------------------------------------------\n"
+                "\n"
+                "1. **Ticket Channel:**\n\n"
+                "• Use it for issues and questions.\n\n"
+                "• Create a ticket for assistance.\n\n"
+                "• Close tickets when resolved.\n\n"
+                "\n"
+                "2. **Team Channel:**\n\n"
+                "• Form teams for activities.\n\n"
+                "• Keep discussions organized.\n\n"
+                "• Respect others' choices."
+                "\n-------------------------------------------------------------------------------------\n"
+            ),inline=False
+        )
+        .set_footer(text="CLoaKY\nOwner | Dev | Admin")
     )
    
 
