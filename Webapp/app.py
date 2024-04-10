@@ -1,17 +1,38 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import discord
+from datetime import datetime
 import requests
-from flask import Flask, jsonify, request
-
 
 app = Flask(__name__)
-
 app.static_folder = 'assets'
 app.secret_key = 'your_secret_key_here'  # Change this to a secure secret key
 
 # Replace with your actual Discord webhook URL (keep it private)
-webhook_url = "https://discord.com/api/webhooks/1220432858506596514/jSPYUE9hgfMlpWNaIusHvVqO6uFWPhnDJHfNSCuEwdPqS-nyFtRgnKQvJK-PUed61Zps"
+discord_webhook_url = "https://discord.com/api/webhooks/1220432858506596514/jSPYUE9hgfMlpWNaIusHvVqO6uFWPhnDJHfNSCuEwdPqS-nyFtRgnKQvJK-PUed61Zps"
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        title = request.form['title']
+        description = request.form['description']
+        priority = request.form['priority']
+        department = request.form['department']
+        footer_text = request.form['footer_text']
+
+        embed = generate_embed(
+            title,
+            description,
+            priority,
+            department,
+            author_name=footer_text,  # Using footer_text as author name
+            author_icon="https://i.imgur.com/2lQLSjo.png",
+        )
+
+        announce(discord_webhook_url, [embed])
+        flash('Announcement sent successfully!', 'success')
+        return redirect(url_for('index'))
+
+    return render_template('index.html')
 
 def announce(url, embeds):
     """Send announcement message to Discord webhook."""
@@ -61,29 +82,26 @@ def generate_embed(title, description, priority, department, color=None, thumbna
 
     return embed
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        title = request.form['title']
-        description = request.form['description']
-        priority = request.form['priority']
-        department = request.form['department']
-        footer_text = request.form['footer_text']
-
-        embed = generate_embed(
-            title,
-            description,
-            priority,
-            department,
-            author_name=footer_text,  # Using footer_text as author name
-            author_icon="https://i.imgur.com/2lQLSjo.png",
-        )
-
-        announce(webhook_url, [embed])
-        flash('Announcement sent successfully!', 'success')
-        return redirect(url_for('index'))
-
-    return render_template('index.html')
+@app.route('/heroku/webhook', methods=['POST'])
+def heroku_webhook():
+    """Handle incoming webhook from Heroku."""
+    data = request.json
+    # Process Heroku webhook data and generate Discord announcement
+    title = "Heroku Update"
+    description = f"Received Heroku webhook:\n```json\n{data}\n```"
+    priority = "medium"  # You can adjust the priority as needed
+    department = "Heroku"  # You can specify the department or category
+    footer_text = "Heroku Webhook"  # You can customize the footer text
+    embed = generate_embed(
+        title,
+        description,
+        priority,
+        department,
+        author_name=footer_text,  # Using footer_text as author name
+        author_icon="https://i.imgur.com/2lQLSjo.png",
+    )
+    announce(discord_webhook_url, [embed])
+    return jsonify({"message": "Webhook received and processed successfully."}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
