@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Discord Announcement Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide&amp;display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animate.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+
+
+<body style="color: var(--bs-emphasis-color);font-size: 16px;background: linear-gradient(black, rgb(0,0,0) 78%, rgb(22,76,88));">
+    <nav class="navbar navbar-expand bg-dark d-flex flex-grow-1 flex-shrink-1 flex-fill justify-content-around align-items-stretch align-content-stretch align-self-stretch flex-wrap mt-auto py-3" data-bs-theme="dark" style="margin: 0px;--bs-body-bg: #000000;background: linear-gradient(black 45%, rgb(22,76,88) 67%, #000000 88%);border-radius: 5px;border-top-width: 8px;border-top-color: var(--bs-body-color);">
+        <div class="container-fluid"><a class="navbar-brand d-flex align-items-center" href="#"><span class="text-light" style="font-family: Audiowide, serif;text-align: justify;font-size: 36px;color: var(--bs-navbar-brand-color);">EaseEx</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-5"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navcol-5">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container" style="color: rgb(255,255,255);margin-top: 28px;margin-bottom: 48px;padding-bottom: 26px;">
+        <h2 data-bss-hover-animate="flash" class="mb-4" style="text-align: center;padding: 60;">Discord Announcement Tool</h2>
+        <form method="POST">
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="title" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Title:</label><input class="form-control form-control" type="text" id="title" name="title" placeholder="Enter the title of the announcement" required="" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);"></div>
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="description" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Description:</label><textarea class="form-control form-control" id="description" name="description" placeholder="Enter the description for your announcement" required="" rows="3" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);"></textarea></div>
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="footer_text" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Announcer Name (Optional):</label><input class="form-control form-control" type="text" id="footer_text" name="footer_text" placeholder="Enter Name of the Announcer (Optional)" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);"></div>
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="department" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Department:</label><input class="form-control form-control" type="text" id="department" name="department" placeholder="Enter the department name or abbreviation" required="" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);"></div>
+            <div class="form-group"><label class="form-label" data-bss-hover-animate="pulse" for="priority" style="text-shadow: 0px 0px var(--bs-emphasis-color);transform: translate(0px) rotate(0deg);filter: brightness(200%) contrast(200%);--bs-primary: #0067ff;--bs-primary-rgb: 0,103,255;">Priority:</label><select class="form-select form-control" id="priority" name="priority" required="" style="background: var(--bs-emphasis-color);color: var(--bs-body-bg);">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select></div><span> {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {% for category, message in messages %} </span>
+            <div class="alert alert-{{ category }}" role="alert"><span> {{ message }} </span></div><span> {% endfor %} {% endif %} {% endwith %} </span><button class="btn btn-primary d-flex flex-row m-auto justify-content-lg-center visible" type="submit" style="background: rgb(0,0,0);border-radius: 14px;">Send Announcement</button>
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bs-init.js') }}"></script>
+</body>
+
+</html>

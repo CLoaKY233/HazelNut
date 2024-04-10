@@ -1,0 +1,11 @@
+@media (min-width: 992px) {
+  h2 {
+    font-family: Audiowide, serif;
+    text-align: center;
+    padding: 5;
+    border-radius: 7px;
+    border-width: 2px;
+    border-style: groove;
+  }
+}
+
