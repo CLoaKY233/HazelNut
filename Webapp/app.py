@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 import discord
 from datetime import datetime
 import requests
+import json
 
 app = Flask(__name__)
 app.static_folder = 'assets'
@@ -82,11 +83,17 @@ def generate_embed(title, description, priority, department, color=None, thumbna
 
     return embed
 
+
 @app.route('/heroku/webhook', methods=['POST'])
 def heroku_webhook():
     """Handle incoming webhook from Heroku."""
     try:
         data = request.json
+
+        # Save the received JSON payload to a string variable
+        heroku_payload_str = json.dumps(data, indent=4)
+        print("Heroku webhook payload:")
+        print(heroku_payload_str)
         
         # Extracting relevant data from the payload
         app_name = data['data'].get('app', {}).get('name', 'Unknown')
@@ -119,6 +126,7 @@ def heroku_webhook():
         # Log the exception for troubleshooting
         print(f"Error processing Heroku webhook: {e}")
         return jsonify({"error": "An error occurred while processing the webhook."}), 500
+
 
 
 if __name__ == '__main__':
