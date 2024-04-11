@@ -998,7 +998,45 @@ async def clear_cache(ctx, mode=None):
         await ctx.send("Cache clearing is currently disabled. Use `?cacheclear on` to enable it.")
 
 
+bot.remove_command('help')
 
+@bot.command(name='help')
+async def help_command(ctx, command=None):
+    if command is None:
+        embed = discord.Embed(title='Bot Commands', description='List of available commands:', color=discord.Color.blue())
+        
+        # Add command descriptions
+        embed.add_field(name='?help', value='Displays the list of available commands.', inline=False)
+        embed.add_field(name='?prune [amount]', value='Deletes the specified number of messages in the current channel.', inline=False)
+        embed.add_field(name='?start', value='Starts the bot.', inline=False)
+        embed.add_field(name='?exportdata', value='Exports team data to an Excel file.', inline=False)
+        embed.add_field(name='?restart', value='Restarts the bot (requires admin role).', inline=False)
+        embed.add_field(name='?cacheclear [mode]', value='Clears the bot cache (requires admin role).', inline=False)
+        
+        # Add additional information and interaction instructions
+        embed.add_field(name='ℹ️ Additional Information', value='To get more details about a specific command, use `?help [command]`.\nFor example, `?help prune` will provide information about the `prune` command.', inline=False)
+        embed.add_field(name='🔄 Refresh Help', value='To refresh the help message, use `?help` again.', inline=False)
+        
+        await ctx.send(embed=embed)
+    else:
+        if command == 'help':
+            description = 'Displays the list of available commands.'
+        elif command == 'prune':
+            description = 'Deletes the specified number of messages in the current channel.'
+        elif command == 'start':
+            description = 'Starts the bot.'
+        elif command == 'exportdata':
+            description = 'Exports team data to an Excel file.'
+        elif command == 'restart':
+            description = 'Restarts the bot (requires admin role).'
+        elif command == 'cacheclear':
+            description = 'Clears the bot cache (requires admin role).'
+        else:
+            await ctx.send(f"Command '{command}' not found. Use `?help` to see the list of available commands.")
+            return
+        
+        embed = discord.Embed(title=f'Command: {command}', description=description, color=discord.Color.blue())
+        await ctx.send(embed=embed)
 
 
 
@@ -1011,3 +1049,6 @@ async def clear_cache(ctx, mode=None):
 
 
 bot.run(os.getenv('DISCORD_TOKEN'))
+
+
+
