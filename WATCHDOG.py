@@ -931,8 +931,16 @@ async def maketeamlist(ctx):
                 reg = member.nick.split()
                 teamlist.append(reg[-1])
         n= writer.write(n,member_counter,channel_counter,teamname,teamlist)        
-                
-        
+    target_channel_id = 1226460657684316190
+    target_channel = ctx.guild.get_channel(target_channel_id)
+    
+    if target_channel:
+        with open('teams.xlsx', 'rb') as file:
+            await target_channel.send(file=discord.File(file, 'teams.xlsx'))
+        os.remove("teams.xlsx")
+    else:
+        print("Target channel not found.")            
+    
 
 
 
