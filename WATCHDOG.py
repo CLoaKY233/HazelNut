@@ -761,7 +761,7 @@ async def delete_messages(ctx, amount ="none"):
         if amount == "none":
             await ctx.send("Please specify the amount of messages to delete")
         elif amount.isdigit():
-            await ctx.channel.purge(limit=int(amount))
+            await ctx.channel.purge(limit=int(amount+1))
             await ctx.send(f"Deleted {amount} messages", delete_after=5)
         elif amount == "all":
             await ctx.channel.purge(limit=None)
@@ -933,7 +933,8 @@ async def maketeamlist(ctx):
         n= writer.write(n,member_counter,channel_counter,teamname,teamlist)        
     target_channel_id = 1226460657684316190
     target_channel = ctx.guild.get_channel(target_channel_id)
-    
+    if "teams.xlsx" not in os.listdir():
+        return
     if target_channel:
         with open('teams.xlsx', 'rb') as file:
             await target_channel.send(file=discord.File(file, 'teams.xlsx'))
@@ -941,6 +942,10 @@ async def maketeamlist(ctx):
     else:
         print("Target channel not found.")            
     
+
+
+
+
 
 
 
@@ -953,6 +958,48 @@ async def close_bot(ctx):
         await bot.close()
     else:
         await ctx.send("You don't have the permission to use this command")   
+
+@bot.command(name='cacheclear')
+async def clear_cache(ctx):
+    required_role_id = 1221538414847856700  # Replace with your actual role ID
+    required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
+    if required_role not in ctx.author.roles:
+        await ctx.send("bad luck loser!")
+        return
+
+    # Flag to track cache clearing state
+    global cache_clearing_enabled
+
+    # Determine action based on presence of subcommand (optional)
+    if ctx.subcommand is not None:
+        if ctx.subcommand == "on":
+            cache_clearing_enabled = True
+            await ctx.send("Cache clearing enabled. Garbage collection will be triggered when you use the `?cacheclear` command.")
+        elif ctx.subcommand == "off":
+            cache_clearing_enabled = False
+            await ctx.send("Cache clearing disabled. Garbage collection will no longer be triggered automatically.")
+        else:
+            await ctx.send("Invalid subcommand. Use `?cacheclear on` or `?cacheclear off`.")
+            return
+
+    # Handle cache clearing and informative message
+    if cache_clearing_enabled:
+        import gc
+        gc.collect()
+        await ctx.send("Triggered garbage collection to help free up memory.  For significant memory improvements, consider code optimization or restarting the bot periodically.")
+    else:
+        await ctx.send("Cache clearing is currently disabled. Use `?cacheclear on` to enable it.")
+
+
+
+
+
+
+
+
+
+
+
 
 
 
