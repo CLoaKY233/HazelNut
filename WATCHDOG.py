@@ -11,6 +11,7 @@ import io
 from gmail import *
 import otp as o
 import writer
+import gc
 
 
 
@@ -959,37 +960,42 @@ async def close_bot(ctx):
     else:
         await ctx.send("You don't have the permission to use this command")   
 
+
+
+cache_clearing_enabled = True  # Initialize cache clearing as enabled by default
+
 @bot.command(name='cacheclear')
-async def clear_cache(ctx):
+async def clear_cache(ctx, mode=None):
     required_role_id = 1221538414847856700  # Replace with your actual role ID
+    
+    # Check if the user has the required role
     required_role = discord.utils.get(ctx.guild.roles, id=required_role_id)
     if required_role not in ctx.author.roles:
-        await ctx.send("bad luck loser!")
+        await ctx.send("You don't have permission to use this command.")
         return
 
-    # Flag to track cache clearing state
     global cache_clearing_enabled
 
-    # Determine action based on presence of subcommand (optional)
-    if ctx.subcommand is not None:
-        if ctx.subcommand == "on":
-            cache_clearing_enabled = True
-            await ctx.send("Cache clearing enabled. Garbage collection will be triggered when you use the `?cacheclear` command.")
-        elif ctx.subcommand == "off":
-            cache_clearing_enabled = False
-            await ctx.send("Cache clearing disabled. Garbage collection will no longer be triggered automatically.")
+    if mode is None:
+        if cache_clearing_enabled:
+            await ctx.send("Cache clearing is currently enabled. Garbage collection will be triggered when you use the `?cacheclear` command.")
         else:
-            await ctx.send("Invalid subcommand. Use `?cacheclear on` or `?cacheclear off`.")
-            return
+            await ctx.send("Cache clearing is currently disabled. Garbage collection will no longer be triggered automatically.")
+    elif mode == "on":
+        cache_clearing_enabled = True
+        await ctx.send("Cache clearing enabled. Garbage collection will be triggered when you use the `?cacheclear` command.")
+    elif mode == "off":
+        cache_clearing_enabled = False
+        await ctx.send("Cache clearing disabled. Garbage collection will no longer be triggered automatically.")
+    else:
+        await ctx.send("Invalid usage. Use `?cacheclear` to check status, `?cacheclear on` to enable, or `?cacheclear off` to disable.")
+        return
 
-    # Handle cache clearing and informative message
     if cache_clearing_enabled:
-        import gc
         gc.collect()
-        await ctx.send("Triggered garbage collection to help free up memory.  For significant memory improvements, consider code optimization or restarting the bot periodically.")
+        await ctx.send("Triggered garbage collection to help free up memory. For significant memory improvements, consider code optimization or restarting the bot periodically.")
     else:
         await ctx.send("Cache clearing is currently disabled. Use `?cacheclear on` to enable it.")
-
 
 
 
