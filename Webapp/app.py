@@ -3,7 +3,7 @@ from datetime import datetime
 import discord
 import requests
 from flask import Flask, jsonify, request
-
+import os
 
 app = Flask(__name__)
 
@@ -82,7 +82,7 @@ def index():
         )
         
         # Check if the provided code matches the expected one
-        if send_code != "1":  # Replace 'your_code_here' with your actual code
+        if send_code != os.getenv('announcerpass'):  # Replace 'your_code_here' with your actual code
             flash('Invalid code!', 'error')
             return redirect(url_for('index'))
 
