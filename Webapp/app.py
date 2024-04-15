@@ -61,6 +61,7 @@ def generate_embed(title, description, priority, department, color=None, thumbna
 
     return embed
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -69,6 +70,7 @@ def index():
         priority = request.form['priority']
         department = request.form['department']
         footer_text = request.form['footer_text']
+        send_code = request.form['pass']  # Corrected to match the name in the HTML form
 
         embed = generate_embed(
             title,
@@ -78,6 +80,11 @@ def index():
             author_name=footer_text,  # Using footer_text as author name
             author_icon="https://i.imgur.com/2lQLSjo.png",
         )
+        
+        # Check if the provided code matches the expected one
+        if send_code != "1":  # Replace 'your_code_here' with your actual code
+            flash('Invalid code!', 'error')
+            return redirect(url_for('index'))
 
         announce(webhook_url, [embed])
         flash('Announcement sent successfully!', 'success')
